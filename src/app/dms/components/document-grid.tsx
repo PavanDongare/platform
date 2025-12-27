@@ -15,7 +15,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import { Trash2, FileText, ExternalLink, ChevronDown } from 'lucide-react'
-import type { Document } from './types'
+import type { Document } from '../types'
 
 interface DocumentGridProps {
   documents: Document[]

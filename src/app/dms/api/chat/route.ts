@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
-import { TOOLS } from '../../tools'
-import { findRelevantDocs } from '../../search'
+import { TOOLS } from '../../lib/tools'
+import { findRelevantDocs } from '../../lib/search'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

@@ -2,9 +2,9 @@
 
 import { useState, useRef, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { useDocuments } from './use-documents'
-import { DocumentGrid } from './document-grid'
-import { Chat } from './chat'
+import { useDocuments } from './lib/use-documents'
+import { DocumentGrid } from './components/document-grid'
+import { Chat } from './components/chat'
 import { Plus, Loader2, Upload } from 'lucide-react'
 
 export default function DMSPage() {

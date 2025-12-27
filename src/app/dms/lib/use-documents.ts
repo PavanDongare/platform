@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { getSupabase } from '@/lib/supabase'
-import type { Document } from './types'
+import type { Document } from '../types'
 
 export function useDocuments() {
   const [documents, setDocuments] = useState<Document[]>([])
@@ -21,7 +21,7 @@ export function useDocuments() {
     if (error) {
       setError(error.message)
     } else {
-      setDocuments(data || [])
+      setDocuments((data as unknown as Document[]) || [])
     }
     setLoading(false)
   }

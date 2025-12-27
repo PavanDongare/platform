@@ -1,12 +1,17 @@
 'use client'
 
 import { useEffect, useRef, useState, useCallback } from 'react'
+import dynamic from 'next/dynamic'
 import { Input } from '@/components/ui/input'
 import { useNotesStore } from '../lib/notes-store'
 import { useDebouncedCallback } from 'use-debounce'
-import { Tldraw, Editor, getSnapshot, loadSnapshot, TLEditorSnapshot } from 'tldraw'
+import { Editor, getSnapshot, loadSnapshot, TLEditorSnapshot } from 'tldraw'
 import { updatePageContent as savePageContentToDB } from '../lib/queries/pages'
 import 'tldraw/tldraw.css'
+
+const Tldraw = dynamic(() => import('tldraw').then((mod) => mod.Tldraw), {
+  ssr: false,
+})
 
 export function PageEditor() {
   const { currentPage, currentPageId, updatePageTitle } = useNotesStore()
@@ -21,31 +26,6 @@ export function PageEditor() {
     if (currentPage) {
       setTitle(currentPage.title)
     }
-  }, [currentPage])
-
-  useEffect(() => {
-    const editor = editorRef.current
-    if (!editor || !currentPage) return
-    if (currentPage.id === currentPageIdRef.current) return
-
-    currentPageIdRef.current = currentPage.id
-    isSavingRef.current = true
-
-    try {
-      if (currentPage.content) {
-        const snapshot = JSON.parse(currentPage.content) as TLEditorSnapshot
-        loadSnapshot(editor.store, snapshot)
-      } else {
-        editor.store.clear()
-      }
-    } catch (error) {
-      console.error('Failed to load canvas content:', error)
-      editor.store.clear()
-    }
-
-    requestAnimationFrame(() => {
-      isSavingRef.current = false
-    })
   }, [currentPage])
 
   const debouncedSave = useDebouncedCallback(async (pageId: string, data: string) => {
@@ -137,7 +117,9 @@ export function PageEditor() {
       <div className="border-b mx-4 my-2" />
 
       <div className="flex-1 relative">
-        <Tldraw onMount={handleMount} />
+        <div className="absolute inset-0">
+          <Tldraw key={currentPageId} onMount={handleMount} components={{ PageMenu: null }} />
+        </div>
       </div>
     </div>
   )
