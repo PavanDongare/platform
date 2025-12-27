@@ -1,0 +1,237 @@
+import { create } from 'zustand'
+import type { Notebook, Section, Page } from '../types'
+import {
+  getNotebooks,
+  createNotebook as createNotebookQuery,
+  updateNotebook as updateNotebookQuery,
+  deleteNotebook as deleteNotebookQuery,
+} from './queries/notebooks'
+import {
+  getSections,
+  createSection as createSectionQuery,
+  deleteSection as deleteSectionQuery,
+} from './queries/sections'
+import {
+  getPages,
+  getPage,
+  createPage as createPageQuery,
+  updatePageContent as updatePageContentQuery,
+  updatePageTitle as updatePageTitleQuery,
+  deletePage as deletePageQuery,
+} from './queries/pages'
+
+interface NotesStore {
+  currentNotebookId: string | null
+  currentSectionId: string | null
+  currentPageId: string | null
+  notebooks: Notebook[]
+  sections: Section[]
+  pages: Page[]
+  currentPage: Page | null
+  isLoadingNotebooks: boolean
+  isLoadingSections: boolean
+  isLoadingPages: boolean
+  isLoadingPage: boolean
+
+  initialize: () => Promise<void>
+  setCurrentNotebook: (id: string) => Promise<void>
+  setCurrentSection: (id: string) => Promise<void>
+  setCurrentPage: (id: string) => Promise<void>
+  loadNotebooks: () => Promise<void>
+  loadSections: (notebookId: string) => Promise<void>
+  loadPages: (sectionId: string) => Promise<void>
+  loadPageContent: (pageId: string) => Promise<void>
+  createNotebook: (title?: string, color?: string) => Promise<Notebook>
+  createSection: (notebookId: string, title?: string, color?: string) => Promise<Section>
+  createPage: (sectionId: string, title?: string) => Promise<Page>
+  updatePageContent: (pageId: string, content: string) => Promise<void>
+  updatePageTitle: (pageId: string, title: string) => Promise<void>
+  deleteNotebook: (id: string) => Promise<void>
+  deleteSection: (id: string) => Promise<void>
+  deletePage: (id: string) => Promise<void>
+}
+
+export const useNotesStore = create<NotesStore>((set, get) => ({
+  currentNotebookId: null,
+  currentSectionId: null,
+  currentPageId: null,
+  notebooks: [],
+  sections: [],
+  pages: [],
+  currentPage: null,
+  isLoadingNotebooks: false,
+  isLoadingSections: false,
+  isLoadingPages: false,
+  isLoadingPage: false,
+
+  initialize: async () => {
+    await get().loadNotebooks()
+    const { notebooks } = get()
+    if (notebooks.length > 0) {
+      await get().setCurrentNotebook(notebooks[0].id)
+    }
+  },
+
+  loadNotebooks: async () => {
+    set({ isLoadingNotebooks: true })
+    try {
+      const notebooks = await getNotebooks()
+      set({ notebooks })
+    } catch (error) {
+      console.error('Failed to load notebooks:', error)
+    } finally {
+      set({ isLoadingNotebooks: false })
+    }
+  },
+
+  loadSections: async (notebookId: string) => {
+    set({ isLoadingSections: true })
+    try {
+      const sections = await getSections(notebookId)
+      set({ sections })
+    } catch (error) {
+      console.error('Failed to load sections:', error)
+    } finally {
+      set({ isLoadingSections: false })
+    }
+  },
+
+  loadPages: async (sectionId: string) => {
+    set({ isLoadingPages: true })
+    try {
+      const pages = await getPages(sectionId)
+      set({ pages })
+    } catch (error) {
+      console.error('Failed to load pages:', error)
+    } finally {
+      set({ isLoadingPages: false })
+    }
+  },
+
+  loadPageContent: async (pageId: string) => {
+    set({ isLoadingPage: true })
+    try {
+      const page = await getPage(pageId)
+      set({ currentPage: page })
+    } catch (error) {
+      console.error('Failed to load page:', error)
+    } finally {
+      set({ isLoadingPage: false })
+    }
+  },
+
+  setCurrentNotebook: async (id: string) => {
+    set({ currentNotebookId: id })
+    await get().loadSections(id)
+    const { sections } = get()
+    if (sections.length > 0) {
+      await get().setCurrentSection(sections[0].id)
+    } else {
+      set({ currentSectionId: null, pages: [], currentPageId: null, currentPage: null })
+    }
+  },
+
+  setCurrentSection: async (id: string) => {
+    set({ currentSectionId: id })
+    await get().loadPages(id)
+    const { pages } = get()
+    if (pages.length > 0) {
+      await get().setCurrentPage(pages[0].id)
+    } else {
+      set({ currentPageId: null, currentPage: null })
+    }
+  },
+
+  setCurrentPage: async (id: string) => {
+    set({ currentPageId: id })
+    await get().loadPageContent(id)
+  },
+
+  createNotebook: async (title?: string, color?: string) => {
+    const notebook = await createNotebookQuery(title, color)
+    await get().loadNotebooks()
+    await get().setCurrentNotebook(notebook.id)
+    return notebook
+  },
+
+  createSection: async (notebookId: string, title?: string, color?: string) => {
+    const section = await createSectionQuery(notebookId, title, color)
+    await get().loadSections(notebookId)
+    await get().setCurrentSection(section.id)
+    return section
+  },
+
+  createPage: async (sectionId: string, title?: string) => {
+    const page = await createPageQuery(sectionId, title)
+    await get().loadPages(sectionId)
+    await get().setCurrentPage(page.id)
+    return page
+  },
+
+  updatePageContent: async (pageId: string, content: string) => {
+    await updatePageContentQuery(pageId, content)
+    const { currentPage } = get()
+    if (currentPage && currentPage.id === pageId) {
+      set({ currentPage: { ...currentPage, content } })
+    }
+  },
+
+  updatePageTitle: async (pageId: string, title: string) => {
+    await updatePageTitleQuery(pageId, title)
+    const { currentPage, pages } = get()
+    if (currentPage && currentPage.id === pageId) {
+      set({ currentPage: { ...currentPage, title } })
+    }
+    set({ pages: pages.map(p => p.id === pageId ? { ...p, title } : p) })
+  },
+
+  deleteNotebook: async (id: string) => {
+    await deleteNotebookQuery(id)
+    await get().loadNotebooks()
+    const { currentNotebookId, notebooks } = get()
+    if (currentNotebookId === id) {
+      if (notebooks.length > 0) {
+        await get().setCurrentNotebook(notebooks[0].id)
+      } else {
+        set({
+          currentNotebookId: null,
+          sections: [],
+          currentSectionId: null,
+          pages: [],
+          currentPageId: null,
+          currentPage: null
+        })
+      }
+    }
+  },
+
+  deleteSection: async (id: string) => {
+    const { currentNotebookId } = get()
+    if (!currentNotebookId) return
+    await deleteSectionQuery(id)
+    await get().loadSections(currentNotebookId)
+    const { currentSectionId, sections } = get()
+    if (currentSectionId === id) {
+      if (sections.length > 0) {
+        await get().setCurrentSection(sections[0].id)
+      } else {
+        set({ currentSectionId: null, pages: [], currentPageId: null, currentPage: null })
+      }
+    }
+  },
+
+  deletePage: async (id: string) => {
+    const { currentSectionId } = get()
+    if (!currentSectionId) return
+    await deletePageQuery(id)
+    await get().loadPages(currentSectionId)
+    const { currentPageId, pages } = get()
+    if (currentPageId === id) {
+      if (pages.length > 0) {
+        await get().setCurrentPage(pages[0].id)
+      } else {
+        set({ currentPageId: null, currentPage: null })
+      }
+    }
+  },
+}))

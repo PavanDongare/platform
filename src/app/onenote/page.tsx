@@ -1,10 +1,27 @@
+'use client'
+
+import { useEffect } from 'react'
+import { useNotesStore } from './lib/notes-store'
+import { NotebooksPanel } from './components/notebooks-panel'
+import { SectionsTabs } from './components/sections-tabs'
+import { PagesPanel } from './components/pages-panel'
+import { PageEditor } from './components/page-editor'
+
 export default function OneNotePage() {
+  const { initialize } = useNotesStore()
+
+  useEffect(() => {
+    initialize()
+  }, [initialize])
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold mb-2">OneNote</h1>
-        <p className="text-muted-foreground">Note-taking app</p>
-        <p className="text-sm text-muted-foreground mt-4">Coming soon...</p>
+    <div className="h-screen flex flex-col overflow-hidden">
+      <SectionsTabs />
+
+      <div className="flex-1 grid grid-cols-[250px_1fr_250px] overflow-hidden">
+        <NotebooksPanel />
+        <PageEditor />
+        <PagesPanel />
       </div>
     </div>
   )

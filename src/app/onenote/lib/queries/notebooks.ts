@@ -1,0 +1,64 @@
+import { getSupabase } from '@/lib/supabase'
+import type { Notebook } from '../../types'
+
+export async function getNotebooks(): Promise<Notebook[]> {
+  const supabase = getSupabase('onenote')
+
+  const { data, error } = await supabase
+    .from('notebooks')
+    .select('*')
+    .is('deleted_at', null)
+    .order('position', { ascending: true })
+
+  if (error) throw error
+  return data || []
+}
+
+export async function createNotebook(
+  title: string = '',
+  color: string = '#3b82f6'
+): Promise<Notebook> {
+  const supabase = getSupabase('onenote')
+
+  const { data: notebooks } = await supabase
+    .from('notebooks')
+    .select('position')
+    .order('position', { ascending: false })
+    .limit(1)
+
+  const position = notebooks && notebooks.length > 0 ? notebooks[0].position + 1 : 0
+
+  const { data, error } = await supabase
+    .from('notebooks')
+    .insert({ title, color, position })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function updateNotebook(
+  id: string,
+  updates: Partial<Notebook>
+): Promise<void> {
+  const supabase = getSupabase('onenote')
+
+  const { error } = await supabase
+    .from('notebooks')
+    .update(updates)
+    .eq('id', id)
+
+  if (error) throw error
+}
+
+export async function deleteNotebook(id: string): Promise<void> {
+  const supabase = getSupabase('onenote')
+
+  const { error } = await supabase
+    .from('notebooks')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id)
+
+  if (error) throw error
+}
