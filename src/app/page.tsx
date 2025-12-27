@@ -1,15 +1,16 @@
 import Link from 'next/link'
-import { FileText, PenTool } from 'lucide-react'
+import { FileText, PenTool, Network } from 'lucide-react'
 
 const apps = [
   { name: 'Documents', icon: FileText, href: '/dms' },
   { name: 'Notes', icon: PenTool, href: '/onenote' },
+  { name: 'Metaflow', icon: Network, href: '/metaflow' },
 ]
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8">
-      <div className="grid grid-cols-2 gap-10 sm:gap-14">
+      <div className="grid grid-cols-3 gap-10 sm:gap-14">
         {apps.map((app) => (
           <Link
             key={app.name}

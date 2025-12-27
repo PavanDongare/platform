@@ -1,0 +1,125 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
+import { ArrowLeft, Plus, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ObjectsTable } from '../../components/ontology/ObjectsTable';
+import { ObjectForm } from '../../components/ontology/ObjectForm';
+import { getObjectTypeById } from '../../lib/queries/object-types';
+import { getObjectsByType, createObject } from '../../lib/queries/objects';
+import type { ObjectType, ObjectInstance } from '../../lib/types/ontology';
+
+export default function WorkspaceTypePage() {
+  const params = useParams();
+  const typeId = params.typeId as string;
+
+  const [objectType, setObjectType] = useState<ObjectType | null>(null);
+  const [objects, setObjects] = useState<ObjectInstance[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+
+  const loadData = async () => {
+    try {
+      const [typeData, objectsData] = await Promise.all([
+        getObjectTypeById(typeId),
+        getObjectsByType(typeId),
+      ]);
+      setObjectType(typeData);
+      setObjects(objectsData);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [typeId]);
+
+  const handleCreate = async (data: Record<string, any>) => {
+    await createObject({
+      objectTypeId: typeId,
+      data,
+    });
+    setShowForm(false);
+    await loadData();
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!objectType) {
+    return (
+      <div className="p-6">
+        <div className="text-destructive">Object type not found</div>
+        <Link href="/metaflow/workspace">
+          <Button variant="outline" className="mt-4">
+            Back to Workspace
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link href="/metaflow/workspace">
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold">{objectType.displayName}</h1>
+            <p className="text-muted-foreground">
+              {objects.length} record{objects.length !== 1 ? 's' : ''}
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Link href={`/metaflow/ontology/${typeId}`}>
+            <Button variant="outline">
+              Edit Schema
+            </Button>
+          </Link>
+          {!showForm && (
+            <Button onClick={() => setShowForm(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              New Record
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
+          {error}
+        </div>
+      )}
+
+      {/* Create Form */}
+      {showForm && (
+        <ObjectForm
+          objectType={objectType}
+          onSave={handleCreate}
+          onCancel={() => setShowForm(false)}
+        />
+      )}
+
+      {/* Data Table */}
+      <ObjectsTable objectType={objectType} objects={objects} />
+    </div>
+  );
+}
