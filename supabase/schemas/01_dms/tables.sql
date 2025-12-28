@@ -50,7 +50,8 @@ CREATE INDEX idx_dms_documents_document_type ON dms.documents(document_type);
 CREATE INDEX idx_dms_documents_section_id ON dms.documents(section_id);
 
 -- Seed Documents_index
-INSERT INTO dms.memory_files (filename, content) VALUES ('Documents_index.md', '');
+INSERT INTO dms.memory_files (filename, content) VALUES ('Documents_index.md', '')
+ON CONFLICT (filename) DO NOTHING;
 
 -- RPC Functions
 
