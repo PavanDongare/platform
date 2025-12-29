@@ -6,8 +6,8 @@ This project uses **declarative schemas** as the source of truth for database st
 
 ```
 supabase/
-├── config.toml          # Supabase configuration
-├── reset-db.sh          # Apply schemas to fresh database
+├── config.toml          # Supabase configuration (has schema_paths)
+├── reset-db.sh          # Bootstrap script for fresh databases
 └── schemas/
     ├── 01_dms/          # Document Management System
     ├── 02_onenote/      # Notes app
@@ -17,78 +17,48 @@ supabase/
 ## First-Time Setup
 
 ```bash
-# Start Supabase
 supabase start
-
-# Apply all schemas
 ./supabase/reset-db.sh
 ```
 
-## Making Schema Changes
+## Day-to-Day Workflow
 
-### 1. Edit the declarative schema
-
-Edit the relevant file in `schemas/`:
 ```bash
-# Example: Add a column to metaflow
+# 1. Edit schema file
 vim supabase/schemas/03_metaflow/02_tables.sql
+
+# 2. Apply changes (diffs and generates ALTERs automatically)
+supabase db push
 ```
 
-### 2. Preview the diff (recommended)
+That's it. `supabase db push` handles everything:
+- Compares schema files vs database
+- Auto-generates ALTER statements
+- Applies changes safely
 
-See what SQL would be generated:
-```bash
-supabase db diff
-```
-
-### 3. Apply the change
-
-**Option A: Generate and apply migration (official Supabase way)**
-```bash
-# Generate migration from diff
-supabase db diff -f descriptive_name
-
-# Apply the migration
-supabase migration up
-```
-
-**Option B: Run SQL directly (quick changes)**
-```bash
-# Run specific ALTER statement
-docker exec supabase_db_platform psql -U postgres -c \
-  "ALTER TABLE metaflow.objects ADD COLUMN status TEXT;"
-
-# Or re-run the entire schema file (safe - uses IF NOT EXISTS)
-docker exec -i supabase_db_platform psql -U postgres \
-  < supabase/schemas/03_metaflow/02_tables.sql
-```
-
-### 4. Commit the schema change
-
-Always commit the updated declarative schema file, not just the migration.
-
-## Workflow Summary
+## Command Reference
 
 | Action | Command |
 |--------|---------|
 | Start Supabase | `supabase start` |
 | Stop Supabase | `supabase stop` |
-| Fresh setup | `./supabase/reset-db.sh` |
+| **Apply schema changes** | `supabase db push` |
 | Preview changes | `supabase db diff` |
-| Generate migration | `supabase db diff -f name` |
-| Apply migration | `supabase migration up` |
-| Direct SQL | `docker exec supabase_db_platform psql -U postgres -c "SQL"` |
+| Fresh setup (schemas missing) | `./supabase/reset-db.sh` |
 | Interactive psql | `docker exec -it supabase_db_platform psql -U postgres` |
 
-## Why Declarative Schemas?
+## Troubleshooting
 
-- **Single source of truth**: Schema files define the complete database structure
-- **Readable**: Organized by app (dms, onenote, metaflow)
-- **Diffable**: `supabase db diff` generates migrations automatically
-- **Idempotent**: Uses `IF NOT EXISTS` so re-running is safe
+**PGRST002 error ("Could not query schema cache")**
+- Schemas don't exist in database
+- Run: `./supabase/reset-db.sh`
+- Then: `docker restart supabase_rest_platform`
 
-## Official Supabase Docs
+**Schema changes not applying**
+- Don't use `reset-db.sh` for changes (it only creates, can't modify)
+- Use: `supabase db push`
 
+## Official Docs
+
+- [Declarative Schemas](https://supabase.com/docs/guides/local-development/declarative-database-schemas)
 - [Local Development](https://supabase.com/docs/guides/local-development)
-- [Database Migrations](https://supabase.com/docs/guides/local-development/overview#database-migrations)
-- [Declarative Schema](https://supabase.com/docs/guides/local-development/declarative-database-schemas)

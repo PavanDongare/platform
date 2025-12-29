@@ -3,25 +3,43 @@
 # Reset Database from Declarative Schemas
 # =============================================================================
 #
-# This script applies all SQL files from supabase/schemas/ to the database.
-# Use this instead of `supabase db reset` since we use declarative schemas
-# without migrations.
+# IMPORTANT: For most schema changes, use `supabase db push` instead!
 #
-# WHEN TO USE:
+# =============================================================================
+# WHICH COMMAND TO USE?
+# =============================================================================
+#
+#   supabase db push     (RECOMMENDED - use this for day-to-day development)
+#     - Diffs your schema files against the database
+#     - Auto-generates and applies ALTER statements
+#     - Handles column adds/changes/removals
+#     - Safe for databases with existing data
+#     - Works because config.toml has schema_paths configured
+#
+#   ./supabase/reset-db.sh  (this script - rarely needed)
+#     - Only runs CREATE IF NOT EXISTS statements
+#     - Cannot modify existing tables (won't add new columns)
+#     - Use only when schemas don't exist at all
+#
+# =============================================================================
+# WHEN TO USE THIS SCRIPT:
+# =============================================================================
 #   - Fresh clone of the repo (first-time setup)
-#   - After dropping/recreating the database
-#   - Setting up a new development environment
+#   - After `supabase stop && supabase start` if schemas are missing
+#   - PostgREST showing PGRST002 errors (schemas don't exist)
 #
+# WHEN NOT TO USE:
+#   - You changed a schema file and want to apply it → use `supabase db push`
+#   - You added a column to an existing table → use `supabase db push`
+#   - Any modification to existing structures → use `supabase db push`
+#
+# =============================================================================
 # USAGE:
 #   ./supabase/reset-db.sh
 #
 # PREREQUISITES:
 #   - Supabase must be running: `supabase start`
 #   - Docker must be running
-#
-# NOTE: This does NOT drop existing tables. If schemas already exist,
-#       you'll see harmless "already exists" notices.
-#       To start fresh: drop schemas first, then run this script.
 #
 # =============================================================================
 
