@@ -5,11 +5,13 @@ import {
   createNotebook as createNotebookQuery,
   updateNotebook as updateNotebookQuery,
   deleteNotebook as deleteNotebookQuery,
+  reorderNotebooks as reorderNotebooksQuery,
 } from './queries/notebooks'
 import {
   getSections,
   createSection as createSectionQuery,
   deleteSection as deleteSectionQuery,
+  reorderSections as reorderSectionsQuery,
 } from './queries/sections'
 import {
   getPages,
@@ -18,6 +20,7 @@ import {
   updatePageContent as updatePageContentQuery,
   updatePageTitle as updatePageTitleQuery,
   deletePage as deletePageQuery,
+  reorderPages as reorderPagesQuery,
 } from './queries/pages'
 
 interface NotesStore {
@@ -60,6 +63,9 @@ interface NotesStore {
   deleteNotebook: (id: string) => Promise<void>
   deleteSection: (id: string) => Promise<void>
   deletePage: (id: string) => Promise<void>
+  reorderNotebooks: (activeId: string, overId: string) => Promise<void>
+  reorderSections: (activeId: string, overId: string) => Promise<void>
+  reorderPages: (activeId: string, overId: string) => Promise<void>
 }
 
 export const useNotesStore = create<NotesStore>((set, get) => ({
@@ -265,5 +271,47 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
         set({ currentPageId: null, currentPage: null })
       }
     }
+  },
+
+  reorderNotebooks: async (activeId: string, overId: string) => {
+    const { notebooks } = get()
+    const oldIndex = notebooks.findIndex(n => n.id === activeId)
+    const newIndex = notebooks.findIndex(n => n.id === overId)
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const reordered = [...notebooks]
+    const [removed] = reordered.splice(oldIndex, 1)
+    reordered.splice(newIndex, 0, removed)
+
+    set({ notebooks: reordered })
+    await reorderNotebooksQuery(reordered.map(n => n.id))
+  },
+
+  reorderSections: async (activeId: string, overId: string) => {
+    const { sections } = get()
+    const oldIndex = sections.findIndex(s => s.id === activeId)
+    const newIndex = sections.findIndex(s => s.id === overId)
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const reordered = [...sections]
+    const [removed] = reordered.splice(oldIndex, 1)
+    reordered.splice(newIndex, 0, removed)
+
+    set({ sections: reordered })
+    await reorderSectionsQuery(reordered.map(s => s.id))
+  },
+
+  reorderPages: async (activeId: string, overId: string) => {
+    const { pages } = get()
+    const oldIndex = pages.findIndex(p => p.id === activeId)
+    const newIndex = pages.findIndex(p => p.id === overId)
+    if (oldIndex === -1 || newIndex === -1) return
+
+    const reordered = [...pages]
+    const [removed] = reordered.splice(oldIndex, 1)
+    reordered.splice(newIndex, 0, removed)
+
+    set({ pages: reordered })
+    await reorderPagesQuery(reordered.map(p => p.id))
   },
 }))

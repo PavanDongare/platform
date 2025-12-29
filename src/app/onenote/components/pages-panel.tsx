@@ -1,11 +1,22 @@
 'use client'
 
 import { useState } from 'react'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useNotesStore } from '../lib/notes-store'
-import { Pencil } from 'lucide-react'
+import { SortablePageItem } from './sortable-page-item'
 
 export function PagesPanel() {
   const {
@@ -15,12 +26,26 @@ export function PagesPanel() {
     setCurrentPage,
     createPage,
     isLoadingPages,
-    updatePageTitle
+    updatePageTitle,
+    reorderPages
   } = useNotesStore()
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
   const [hoveredId, setHoveredId] = useState<string | null>(null)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 }
+    })
+  )
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    if (over && active.id !== over.id) {
+      await reorderPages(active.id as string, over.id as string)
+    }
+  }
 
   const handleCreatePage = async () => {
     if (!currentSectionId) return
@@ -91,51 +116,33 @@ export function PagesPanel() {
               <p>No pages yet</p>
             </div>
           ) : (
-            pages.map((page) => (
-              <div
-                key={page.id}
-                className={`w-full p-3 mb-2 rounded-lg transition-colors group ${
-                  currentPageId === page.id
-                    ? 'bg-primary/10 border-2 border-primary/20'
-                    : 'hover:bg-muted border-2 border-transparent'
-                }`}
-                onMouseEnter={() => setHoveredId(page.id)}
-                onMouseLeave={() => setHoveredId(null)}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={pages.map(p => p.id)}
+                strategy={verticalListSortingStrategy}
               >
-                <div className="flex items-start gap-2">
-                  <span className="text-lg flex-shrink-0">📄</span>
-
-                  {editingId === page.id ? (
-                    <Input
-                      value={editingTitle}
-                      onChange={(e) => setEditingTitle(e.target.value)}
-                      onBlur={() => handleSaveEdit(page.id)}
-                      onKeyDown={(e) => handleKeyDown(e, page.id)}
-                      className="h-7 text-sm font-medium"
-                      autoFocus
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  ) : (
-                    <>
-                      <span
-                        className="font-medium text-sm truncate flex-1 cursor-pointer"
-                        onClick={() => setCurrentPage(page.id)}
-                      >
-                        {page.title || <span className="text-muted-foreground italic">Unnamed</span>}
-                      </span>
-                      {hoveredId === page.id && (
-                        <button
-                          onClick={(e) => handleStartEdit(page.id, page.title, e)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-primary/10 rounded flex-shrink-0"
-                        >
-                          <Pencil className="w-3 h-3" />
-                        </button>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-            ))
+                {pages.map((page) => (
+                  <SortablePageItem
+                    key={page.id}
+                    page={page}
+                    isSelected={currentPageId === page.id}
+                    isEditing={editingId === page.id}
+                    editingTitle={editingTitle}
+                    isHovered={hoveredId === page.id}
+                    onSelect={() => setCurrentPage(page.id)}
+                    onStartEdit={(e) => handleStartEdit(page.id, page.title, e)}
+                    onSaveEdit={() => handleSaveEdit(page.id)}
+                    onKeyDown={(e) => handleKeyDown(e, page.id)}
+                    onTitleChange={setEditingTitle}
+                    onHover={(hovered) => setHoveredId(hovered ? page.id : null)}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
           )}
         </div>
       </ScrollArea>

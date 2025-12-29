@@ -65,3 +65,18 @@ export async function deleteSection(id: string): Promise<void> {
 
   if (error) throw error
 }
+
+export async function reorderSections(orderedIds: string[]): Promise<void> {
+  const supabase = getSupabase('onenote')
+
+  const updates = orderedIds.map((id, index) =>
+    supabase
+      .from('sections')
+      .update({ position: index })
+      .eq('id', id)
+  )
+
+  const results = await Promise.all(updates)
+  const error = results.find(r => r.error)?.error
+  if (error) throw error
+}

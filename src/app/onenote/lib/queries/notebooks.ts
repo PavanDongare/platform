@@ -72,3 +72,18 @@ export async function deleteNotebook(id: string): Promise<void> {
 
   if (error) throw error
 }
+
+export async function reorderNotebooks(orderedIds: string[]): Promise<void> {
+  const supabase = getSupabase('onenote')
+
+  const updates = orderedIds.map((id, index) =>
+    supabase
+      .from('notebooks')
+      .update({ position: index })
+      .eq('id', id)
+  )
+
+  const results = await Promise.all(updates)
+  const error = results.find(r => r.error)?.error
+  if (error) throw error
+}

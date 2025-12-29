@@ -1,8 +1,19 @@
 'use client'
 
 import { useState } from 'react'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   AlertDialog,
@@ -16,7 +27,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { useNotesStore } from '../lib/notes-store'
 import { updateNotebook } from '../lib/queries/notebooks'
-import { Pencil, Trash2 } from 'lucide-react'
+import { SortableNotebookItem } from './sortable-notebook-item'
 
 export function NotebooksPanel() {
   const {
@@ -26,7 +37,8 @@ export function NotebooksPanel() {
     createNotebook,
     deleteNotebook,
     loadNotebooks,
-    isLoadingNotebooks
+    isLoadingNotebooks,
+    reorderNotebooks
   } = useNotesStore()
 
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -34,6 +46,19 @@ export function NotebooksPanel() {
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [notebookToDelete, setNotebookToDelete] = useState<{ id: string; title: string } | null>(null)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 }
+    })
+  )
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    if (over && active.id !== over.id) {
+      await reorderNotebooks(active.id as string, over.id as string)
+    }
+  }
 
   const handleCreateNotebook = async () => {
     try {
@@ -110,60 +135,34 @@ export function NotebooksPanel() {
               <p>No notebooks yet</p>
             </div>
           ) : (
-            notebooks.map((notebook) => (
-              <div
-                key={notebook.id}
-                className={`w-full p-3 mb-2 rounded-lg transition-colors flex items-center gap-3 group ${
-                  currentNotebookId === notebook.id
-                    ? 'bg-primary/10 border-2 border-primary/20'
-                    : 'hover:bg-muted border-2 border-transparent'
-                }`}
-                onMouseEnter={() => setHoveredId(notebook.id)}
-                onMouseLeave={() => setHoveredId(null)}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={notebooks.map(n => n.id)}
+                strategy={verticalListSortingStrategy}
               >
-                <div
-                  className="w-4 h-4 rounded flex-shrink-0"
-                  style={{ backgroundColor: notebook.color }}
-                />
-
-                {editingId === notebook.id ? (
-                  <Input
-                    value={editingTitle}
-                    onChange={(e) => setEditingTitle(e.target.value)}
-                    onBlur={() => handleSaveEdit(notebook.id)}
+                {notebooks.map((notebook) => (
+                  <SortableNotebookItem
+                    key={notebook.id}
+                    notebook={notebook}
+                    isSelected={currentNotebookId === notebook.id}
+                    isEditing={editingId === notebook.id}
+                    editingTitle={editingTitle}
+                    isHovered={hoveredId === notebook.id}
+                    onSelect={() => setCurrentNotebook(notebook.id)}
+                    onStartEdit={(e) => handleStartEdit(notebook.id, notebook.title, e)}
+                    onSaveEdit={() => handleSaveEdit(notebook.id)}
                     onKeyDown={(e) => handleKeyDown(e, notebook.id)}
-                    className="h-7 text-sm font-medium"
-                    autoFocus
-                    onClick={(e) => e.stopPropagation()}
+                    onTitleChange={setEditingTitle}
+                    onDelete={(e) => handleDeleteClick(notebook.id, notebook.title, e)}
+                    onHover={(hovered) => setHoveredId(hovered ? notebook.id : null)}
                   />
-                ) : (
-                  <>
-                    <span
-                      className="font-medium text-sm truncate flex-1 cursor-pointer"
-                      onClick={() => setCurrentNotebook(notebook.id)}
-                    >
-                      {notebook.title || <span className="text-muted-foreground italic">Unnamed</span>}
-                    </span>
-                    {hoveredId === notebook.id && (
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={(e) => handleStartEdit(notebook.id, notebook.title, e)}
-                          className="p-1 hover:bg-primary/10 rounded"
-                        >
-                          <Pencil className="w-3 h-3" />
-                        </button>
-                        <button
-                          onClick={(e) => handleDeleteClick(notebook.id, notebook.title, e)}
-                          className="p-1 hover:bg-destructive/10 rounded"
-                        >
-                          <Trash2 className="w-3 h-3 text-destructive" />
-                        </button>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            ))
+                ))}
+              </SortableContext>
+            </DndContext>
           )}
         </div>
       </ScrollArea>

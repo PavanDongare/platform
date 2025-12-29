@@ -14,7 +14,7 @@ const Tldraw = dynamic(() => import('tldraw').then((mod) => mod.Tldraw), {
 })
 
 export function PageEditor() {
-  const { currentPage, currentPageId, updatePageTitle } = useNotesStore()
+  const { currentPage, currentPageId, updatePageTitle, isLoadingPage } = useNotesStore()
 
   const [title, setTitle] = useState('')
   const [isSaving, setIsSaving] = useState(false)
@@ -100,6 +100,14 @@ export function PageEditor() {
     )
   }
 
+  if (isLoadingPage) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-background">
+        <div className="text-sm text-muted-foreground">Loading page...</div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex-1 flex flex-col bg-background overflow-hidden">
       <div className="p-4 pb-0 flex items-center gap-2">
@@ -118,7 +126,7 @@ export function PageEditor() {
 
       <div className="flex-1 relative">
         <div className="absolute inset-0">
-          <Tldraw key={currentPageId} onMount={handleMount} components={{ PageMenu: null }} />
+          <Tldraw key={currentPage.id} onMount={handleMount} components={{ PageMenu: null }} />
         </div>
       </div>
     </div>

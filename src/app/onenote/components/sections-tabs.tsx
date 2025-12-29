@@ -1,13 +1,23 @@
 'use client'
 
 import { useState } from 'react'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  horizontalListSortingStrategy,
+} from '@dnd-kit/sortable'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useNotesStore } from '../lib/notes-store'
 import { updateSection } from '../lib/queries/sections'
-import { cn } from '@/lib/utils'
-import { Pencil } from 'lucide-react'
+import { SortableSectionTab } from './sortable-section-tab'
 
 export function SectionsTabs() {
   const {
@@ -17,12 +27,26 @@ export function SectionsTabs() {
     setCurrentSection,
     createSection,
     loadSections,
-    isLoadingSections
+    isLoadingSections,
+    reorderSections
   } = useNotesStore()
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
   const [hoveredId, setHoveredId] = useState<string | null>(null)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 }
+    })
+  )
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    if (over && active.id !== over.id) {
+      await reorderSections(active.id as string, over.id as string)
+    }
+  }
 
   const handleCreateSection = async () => {
     if (!currentNotebookId) return
@@ -79,51 +103,33 @@ export function SectionsTabs() {
           ) : sections.length === 0 ? (
             <div className="text-sm text-muted-foreground">No sections yet</div>
           ) : (
-            sections.map((section) => (
-              <div
-                key={section.id}
-                className={cn(
-                  'px-4 py-2 rounded-t-lg border-b-2 transition-all whitespace-nowrap group flex items-center gap-2',
-                  currentSectionId === section.id
-                    ? 'bg-background border-primary font-medium'
-                    : 'border-transparent hover:bg-muted/50'
-                )}
-                style={{
-                  borderTopColor: currentSectionId === section.id ? section.color : undefined
-                }}
-                onMouseEnter={() => setHoveredId(section.id)}
-                onMouseLeave={() => setHoveredId(null)}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={sections.map(s => s.id)}
+                strategy={horizontalListSortingStrategy}
               >
-                {editingId === section.id ? (
-                  <Input
-                    value={editingTitle}
-                    onChange={(e) => setEditingTitle(e.target.value)}
-                    onBlur={() => handleSaveEdit(section.id)}
+                {sections.map((section) => (
+                  <SortableSectionTab
+                    key={section.id}
+                    section={section}
+                    isSelected={currentSectionId === section.id}
+                    isEditing={editingId === section.id}
+                    editingTitle={editingTitle}
+                    isHovered={hoveredId === section.id}
+                    onSelect={() => setCurrentSection(section.id)}
+                    onStartEdit={(e) => handleStartEdit(section.id, section.title, e)}
+                    onSaveEdit={() => handleSaveEdit(section.id)}
                     onKeyDown={(e) => handleKeyDown(e, section.id)}
-                    className="h-6 text-sm font-medium w-32"
-                    autoFocus
-                    onClick={(e) => e.stopPropagation()}
+                    onTitleChange={setEditingTitle}
+                    onHover={(hovered) => setHoveredId(hovered ? section.id : null)}
                   />
-                ) : (
-                  <>
-                    <span
-                      className="cursor-pointer"
-                      onClick={() => setCurrentSection(section.id)}
-                    >
-                      {section.title || <span className="text-muted-foreground italic">Unnamed</span>}
-                    </span>
-                    {hoveredId === section.id && (
-                      <button
-                        onClick={(e) => handleStartEdit(section.id, section.title, e)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-primary/10 rounded"
-                      >
-                        <Pencil className="w-3 h-3" />
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
-            ))
+                ))}
+              </SortableContext>
+            </DndContext>
           )}
 
           <Button onClick={handleCreateSection} variant="ghost" size="sm" className="ml-2 h-8 w-8 p-0">
