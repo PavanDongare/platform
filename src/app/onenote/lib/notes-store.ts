@@ -171,8 +171,17 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     const { tenantId, userId } = get()
     if (!tenantId || !userId) return undefined
 
+    // Create notebook
     const notebook = await createNotebookQuery(tenantId, userId, title, color)
     await get().loadNotebooks()
+
+    // Create default section
+    const section = await createSectionQuery(notebook.id)
+
+    // Create default page in that section
+    await createPageQuery(section.id)
+
+    // Select the notebook (will cascade to section/page)
     await get().setCurrentNotebook(notebook.id)
     return notebook
   },
