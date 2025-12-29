@@ -1,7 +1,6 @@
 // Layouts Queries (ontology visualization + process layouts)
 
 import { getSupabase } from '@/lib/supabase';
-import { DEMO_TENANT_ID } from '../types';
 
 // ==========================================
 // Ontology Layout (node positions for visualization)
@@ -25,12 +24,12 @@ function mapOntologyLayout(row: Record<string, unknown>): OntologyLayout {
   };
 }
 
-export async function getOntologyLayout(): Promise<OntologyLayout | null> {
+export async function getOntologyLayout(tenantId: string): Promise<OntologyLayout | null> {
   const supabase = getSupabase('metaflow');
   const { data, error } = await supabase
     .from('ontology_layouts')
     .select('*')
-    .eq('tenant_id', DEMO_TENANT_ID)
+    .eq('tenant_id', tenantId)
     .single();
 
   if (error) {
@@ -41,6 +40,7 @@ export async function getOntologyLayout(): Promise<OntologyLayout | null> {
 }
 
 export async function saveOntologyLayout(
+  tenantId: string,
   nodePositions: Record<string, { x: number; y: number }>
 ): Promise<OntologyLayout> {
   const supabase = getSupabase('metaflow');
@@ -50,7 +50,7 @@ export async function saveOntologyLayout(
     .from('ontology_layouts')
     .upsert(
       {
-        tenant_id: DEMO_TENANT_ID,
+        tenant_id: tenantId,
         node_positions: nodePositions,
         updated_at: new Date().toISOString(),
       },
@@ -91,24 +91,24 @@ function mapProcessLayout(row: Record<string, unknown>): ProcessLayout {
   };
 }
 
-export async function getProcessLayouts(): Promise<ProcessLayout[]> {
+export async function getProcessLayouts(tenantId: string): Promise<ProcessLayout[]> {
   const supabase = getSupabase('metaflow');
   const { data, error } = await supabase
     .from('process_layouts')
     .select('*')
-    .eq('tenant_id', DEMO_TENANT_ID)
+    .eq('tenant_id', tenantId)
     .order('process_name', { ascending: true });
 
   if (error) throw error;
   return (data || []).map(mapProcessLayout);
 }
 
-export async function getProcessLayout(processName: string): Promise<ProcessLayout | null> {
+export async function getProcessLayout(processName: string, tenantId: string): Promise<ProcessLayout | null> {
   const supabase = getSupabase('metaflow');
   const { data, error } = await supabase
     .from('process_layouts')
     .select('*')
-    .eq('tenant_id', DEMO_TENANT_ID)
+    .eq('tenant_id', tenantId)
     .eq('process_name', processName)
     .single();
 
@@ -119,19 +119,22 @@ export async function getProcessLayout(processName: string): Promise<ProcessLayo
   return mapProcessLayout(data);
 }
 
-export async function saveProcessLayout(input: {
-  processName: string;
-  objectTypeIds: string[];
-  trackedPicklists?: string[];
-  layoutData: Record<string, unknown>;
-}): Promise<ProcessLayout> {
+export async function saveProcessLayout(
+  tenantId: string,
+  input: {
+    processName: string;
+    objectTypeIds: string[];
+    trackedPicklists?: string[];
+    layoutData: Record<string, unknown>;
+  }
+): Promise<ProcessLayout> {
   const supabase = getSupabase('metaflow');
 
   const { data, error } = await supabase
     .from('process_layouts')
     .upsert(
       {
-        tenant_id: DEMO_TENANT_ID,
+        tenant_id: tenantId,
         process_name: input.processName,
         object_type_ids: input.objectTypeIds,
         tracked_picklists: input.trackedPicklists || [],
@@ -147,12 +150,12 @@ export async function saveProcessLayout(input: {
   return mapProcessLayout(data);
 }
 
-export async function deleteProcessLayout(processName: string): Promise<void> {
+export async function deleteProcessLayout(processName: string, tenantId: string): Promise<void> {
   const supabase = getSupabase('metaflow');
   const { error } = await supabase
     .from('process_layouts')
     .delete()
-    .eq('tenant_id', DEMO_TENANT_ID)
+    .eq('tenant_id', tenantId)
     .eq('process_name', processName);
 
   if (error) throw error;

@@ -2,8 +2,6 @@
 
 import { getSupabase } from '@/lib/supabase';
 import type { ObjectInstance, ObjectTypeConfig } from '../types';
-import { DEMO_TENANT_ID } from '../types';
-import { getObjectType } from './object-types';
 
 // Row mapper
 function mapObject(row: Record<string, unknown>): ObjectInstance {
@@ -20,6 +18,7 @@ function mapObject(row: Record<string, unknown>): ObjectInstance {
 
 // List objects for a type
 export async function getObjects(
+  tenantId: string,
   objectTypeId: string,
   limit?: number
 ): Promise<ObjectInstance[]> {
@@ -27,7 +26,7 @@ export async function getObjects(
   let query = supabase
     .from('objects')
     .select('*')
-    .eq('tenant_id', DEMO_TENANT_ID)
+    .eq('tenant_id', tenantId)
     .eq('object_type_id', objectTypeId)
     .order('created_at', { ascending: false });
 
@@ -41,13 +40,13 @@ export async function getObjects(
 }
 
 // Get single object
-export async function getObject(id: string): Promise<ObjectInstance | null> {
+export async function getObject(id: string, tenantId: string): Promise<ObjectInstance | null> {
   const supabase = getSupabase('metaflow');
   const { data, error } = await supabase
     .from('objects')
     .select('*')
     .eq('id', id)
-    .eq('tenant_id', DEMO_TENANT_ID)
+    .eq('tenant_id', tenantId)
     .single();
 
   if (error) {
@@ -77,19 +76,16 @@ function validateObjectData(
 
 // Create object
 export async function createObject(
+  tenantId: string,
   objectTypeId: string,
-  objectData: Record<string, unknown>
+  objectData: Record<string, unknown>,
+  objectTypeConfig: ObjectTypeConfig,
+  objectTypeDisplayName: string
 ): Promise<ObjectInstance> {
   const supabase = getSupabase('metaflow');
 
-  // Get object type for validation
-  const objectType = await getObjectType(objectTypeId);
-  if (!objectType) {
-    throw new Error('Object type not found');
-  }
-
   // Validate the data
-  const errors = validateObjectData(objectData, objectType.config);
+  const errors = validateObjectData(objectData, objectTypeConfig);
   if (Object.keys(errors).length > 0) {
     throw new Error(`Validation failed: ${JSON.stringify(errors)}`);
   }
@@ -98,9 +94,9 @@ export async function createObject(
   const { data: semanticIdData, error: semanticIdError } = await supabase.rpc(
     'generate_semantic_id',
     {
-      p_tenant_id: DEMO_TENANT_ID,
+      p_tenant_id: tenantId,
       p_object_type_id: objectTypeId,
-      p_display_name: objectType.displayName,
+      p_display_name: objectTypeDisplayName,
     }
   );
 
@@ -111,7 +107,7 @@ export async function createObject(
   const { data, error } = await supabase
     .from('objects')
     .insert({
-      tenant_id: DEMO_TENANT_ID,
+      tenant_id: tenantId,
       object_type_id: objectTypeId,
       semantic_id: semanticId,
       data: objectData,
@@ -126,6 +122,7 @@ export async function createObject(
 // Update object
 export async function updateObject(
   id: string,
+  tenantId: string,
   objectData: Record<string, unknown>
 ): Promise<ObjectInstance> {
   const supabase = getSupabase('metaflow');
@@ -136,7 +133,7 @@ export async function updateObject(
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
-    .eq('tenant_id', DEMO_TENANT_ID)
+    .eq('tenant_id', tenantId)
     .select()
     .single();
 
@@ -145,28 +142,29 @@ export async function updateObject(
 }
 
 // Delete object
-export async function deleteObject(id: string): Promise<void> {
+export async function deleteObject(id: string, tenantId: string): Promise<void> {
   const supabase = getSupabase('metaflow');
   const { error } = await supabase
     .from('objects')
     .delete()
     .eq('id', id)
-    .eq('tenant_id', DEMO_TENANT_ID);
+    .eq('tenant_id', tenantId);
 
   if (error) throw error;
 }
 
 // Get objects by IDs
-export async function getObjectsByIds(ids: string[]): Promise<ObjectInstance[]> {
+export async function getObjectsByIds(ids: string[], tenantId: string): Promise<ObjectInstance[]> {
   if (ids.length === 0) return [];
 
   const supabase = getSupabase('metaflow');
   const { data, error } = await supabase
     .from('objects')
     .select('*')
-    .eq('tenant_id', DEMO_TENANT_ID)
+    .eq('tenant_id', tenantId)
     .in('id', ids);
 
   if (error) throw error;
   return (data || []).map(mapObject);
 }
+

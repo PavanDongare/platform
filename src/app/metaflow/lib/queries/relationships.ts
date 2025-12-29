@@ -2,7 +2,6 @@
 
 import { getSupabase } from '@/lib/supabase';
 import type { Relationship, RelationshipCardinality } from '../types';
-import { DEMO_TENANT_ID } from '../types';
 
 // Row mapper
 function mapRelationship(row: Record<string, unknown>): Relationship {
@@ -26,12 +25,12 @@ function mapRelationship(row: Record<string, unknown>): Relationship {
 }
 
 // List all relationships
-export async function getRelationships(): Promise<Relationship[]> {
+export async function getRelationships(tenantId: string): Promise<Relationship[]> {
   const supabase = getSupabase('metaflow');
   const { data, error } = await supabase
     .from('relationships')
     .select('*')
-    .eq('tenant_id', DEMO_TENANT_ID)
+    .eq('tenant_id', tenantId)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -39,13 +38,13 @@ export async function getRelationships(): Promise<Relationship[]> {
 }
 
 // Get single relationship
-export async function getRelationship(id: string): Promise<Relationship | null> {
+export async function getRelationship(id: string, tenantId: string): Promise<Relationship | null> {
   const supabase = getSupabase('metaflow');
   const { data, error } = await supabase
     .from('relationships')
     .select('*')
     .eq('id', id)
-    .eq('tenant_id', DEMO_TENANT_ID)
+    .eq('tenant_id', tenantId)
     .single();
 
   if (error) {
@@ -57,13 +56,14 @@ export async function getRelationship(id: string): Promise<Relationship | null> 
 
 // Get relationships by object type (source or target)
 export async function getRelationshipsByObjectType(
-  objectTypeId: string
+  objectTypeId: string,
+  tenantId: string
 ): Promise<Relationship[]> {
   const supabase = getSupabase('metaflow');
   const { data, error } = await supabase
     .from('relationships')
     .select('*')
-    .eq('tenant_id', DEMO_TENANT_ID)
+    .eq('tenant_id', tenantId)
     .or(`source_object_type_id.eq.${objectTypeId},target_object_type_id.eq.${objectTypeId}`);
 
   if (error) throw error;
@@ -71,24 +71,27 @@ export async function getRelationshipsByObjectType(
 }
 
 // Create relationship
-export async function createRelationship(input: {
-  displayName: string;
-  cardinality: RelationshipCardinality;
-  sourceObjectTypeId: string;
-  targetObjectTypeId: string;
-  sourceDisplayName: string;
-  targetDisplayName: string;
-  propertyName?: string;
-  junctionObjectTypeId?: string;
-  sourceFkPropertyName?: string;
-  targetFkPropertyName?: string;
-  config?: Record<string, unknown>;
-}): Promise<Relationship> {
+export async function createRelationship(
+  tenantId: string,
+  input: {
+    displayName: string;
+    cardinality: RelationshipCardinality;
+    sourceObjectTypeId: string;
+    targetObjectTypeId: string;
+    sourceDisplayName: string;
+    targetDisplayName: string;
+    propertyName?: string;
+    junctionObjectTypeId?: string;
+    sourceFkPropertyName?: string;
+    targetFkPropertyName?: string;
+    config?: Record<string, unknown>;
+  }
+): Promise<Relationship> {
   const supabase = getSupabase('metaflow');
   const { data, error } = await supabase
     .from('relationships')
     .insert({
-      tenant_id: DEMO_TENANT_ID,
+      tenant_id: tenantId,
       display_name: input.displayName,
       cardinality: input.cardinality,
       source_object_type_id: input.sourceObjectTypeId,
@@ -111,6 +114,7 @@ export async function createRelationship(input: {
 // Update relationship
 export async function updateRelationship(
   id: string,
+  tenantId: string,
   updates: {
     displayName?: string;
     sourceDisplayName?: string;
@@ -132,7 +136,7 @@ export async function updateRelationship(
     .from('relationships')
     .update(updateData)
     .eq('id', id)
-    .eq('tenant_id', DEMO_TENANT_ID)
+    .eq('tenant_id', tenantId)
     .select()
     .single();
 
@@ -141,13 +145,13 @@ export async function updateRelationship(
 }
 
 // Delete relationship
-export async function deleteRelationship(id: string): Promise<void> {
+export async function deleteRelationship(id: string, tenantId: string): Promise<void> {
   const supabase = getSupabase('metaflow');
   const { error } = await supabase
     .from('relationships')
     .delete()
     .eq('id', id)
-    .eq('tenant_id', DEMO_TENANT_ID);
+    .eq('tenant_id', tenantId);
 
   if (error) throw error;
 }

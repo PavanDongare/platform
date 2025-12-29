@@ -38,8 +38,10 @@ export function NotebooksPanel() {
   const handleCreateNotebook = async () => {
     try {
       const notebook = await createNotebook()
-      setEditingId(notebook.id)
-      setEditingTitle('')
+      if (notebook) {
+        setEditingId(notebook.id)
+        setEditingTitle('')
+      }
     } catch (error) {
       console.error('Failed to create notebook:', error)
     }

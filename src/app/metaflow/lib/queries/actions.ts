@@ -2,7 +2,6 @@
 
 import { getSupabase } from '@/lib/supabase';
 import type { ActionType, ActionTypeConfig, ActionListItem } from '../types';
-import { DEMO_TENANT_ID } from '../types';
 
 // Row mapper
 function mapActionType(row: Record<string, unknown>): ActionType {
@@ -17,12 +16,12 @@ function mapActionType(row: Record<string, unknown>): ActionType {
 }
 
 // List all action types
-export async function getActionTypes(): Promise<ActionType[]> {
+export async function getActionTypes(tenantId: string): Promise<ActionType[]> {
   const supabase = getSupabase('metaflow');
   const { data, error } = await supabase
     .from('action_types')
     .select('*')
-    .eq('tenant_id', DEMO_TENANT_ID)
+    .eq('tenant_id', tenantId)
     .order('display_name', { ascending: true });
 
   if (error) throw error;
@@ -30,13 +29,13 @@ export async function getActionTypes(): Promise<ActionType[]> {
 }
 
 // Get single action type
-export async function getActionType(id: string): Promise<ActionType | null> {
+export async function getActionType(id: string, tenantId: string): Promise<ActionType | null> {
   const supabase = getSupabase('metaflow');
   const { data, error } = await supabase
     .from('action_types')
     .select('*')
     .eq('id', id)
-    .eq('tenant_id', DEMO_TENANT_ID)
+    .eq('tenant_id', tenantId)
     .single();
 
   if (error) {
@@ -47,10 +46,13 @@ export async function getActionType(id: string): Promise<ActionType | null> {
 }
 
 // Create action type
-export async function createActionType(input: {
-  displayName: string;
-  config: ActionTypeConfig;
-}): Promise<ActionType> {
+export async function createActionType(
+  tenantId: string,
+  input: {
+    displayName: string;
+    config: ActionTypeConfig;
+  }
+): Promise<ActionType> {
   if (!input.displayName?.trim()) {
     throw new Error('Display name is required');
   }
@@ -59,7 +61,7 @@ export async function createActionType(input: {
   const { data, error } = await supabase
     .from('action_types')
     .insert({
-      tenant_id: DEMO_TENANT_ID,
+      tenant_id: tenantId,
       display_name: input.displayName,
       config: input.config,
     })
@@ -73,6 +75,7 @@ export async function createActionType(input: {
 // Update action type
 export async function updateActionType(
   id: string,
+  tenantId: string,
   updates: { displayName?: string; config?: ActionTypeConfig }
 ): Promise<ActionType> {
   const updateData: Record<string, unknown> = {
@@ -87,7 +90,7 @@ export async function updateActionType(
     .from('action_types')
     .update(updateData)
     .eq('id', id)
-    .eq('tenant_id', DEMO_TENANT_ID)
+    .eq('tenant_id', tenantId)
     .select()
     .single();
 
@@ -96,22 +99,22 @@ export async function updateActionType(
 }
 
 // Delete action type
-export async function deleteActionType(id: string): Promise<void> {
+export async function deleteActionType(id: string, tenantId: string): Promise<void> {
   const supabase = getSupabase('metaflow');
   const { error } = await supabase
     .from('action_types')
     .delete()
     .eq('id', id)
-    .eq('tenant_id', DEMO_TENANT_ID);
+    .eq('tenant_id', tenantId);
 
   if (error) throw error;
 }
 
 // List actions via RPC (for UI)
-export async function listActions(): Promise<ActionListItem[]> {
+export async function listActions(tenantId: string): Promise<ActionListItem[]> {
   const supabase = getSupabase('metaflow');
   const { data, error } = await supabase.rpc('list_actions', {
-    p_tenant_id: DEMO_TENANT_ID,
+    p_tenant_id: tenantId,
   });
 
   if (error) throw error;
@@ -128,13 +131,14 @@ export async function listActions(): Promise<ActionListItem[]> {
 // Execute action
 export async function executeAction(
   actionTypeId: string,
+  tenantId: string,
   parameters: Record<string, unknown>,
   currentUser?: string
 ): Promise<{ success: boolean; result?: unknown; error?: string }> {
   const supabase = getSupabase('metaflow');
   const { data, error } = await supabase.rpc('execute_action', {
     p_action_type_id: actionTypeId,
-    p_tenant_id: DEMO_TENANT_ID,
+    p_tenant_id: tenantId,
     p_parameters: parameters,
     p_current_user: currentUser,
   });

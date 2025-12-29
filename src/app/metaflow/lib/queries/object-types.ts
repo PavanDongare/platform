@@ -2,7 +2,6 @@
 
 import { getSupabase } from '@/lib/supabase';
 import type { ObjectType, ObjectTypeConfig } from '../types';
-import { DEMO_TENANT_ID } from '../types';
 
 // Row mapper
 function mapObjectType(row: Record<string, unknown>): ObjectType {
@@ -17,12 +16,12 @@ function mapObjectType(row: Record<string, unknown>): ObjectType {
 }
 
 // List all object types
-export async function getObjectTypes(): Promise<ObjectType[]> {
+export async function getObjectTypes(tenantId: string): Promise<ObjectType[]> {
   const supabase = getSupabase('metaflow');
   const { data, error } = await supabase
     .from('object_types')
     .select('*')
-    .eq('tenant_id', DEMO_TENANT_ID)
+    .eq('tenant_id', tenantId)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -30,13 +29,13 @@ export async function getObjectTypes(): Promise<ObjectType[]> {
 }
 
 // Get single object type
-export async function getObjectType(id: string): Promise<ObjectType | null> {
+export async function getObjectType(id: string, tenantId: string): Promise<ObjectType | null> {
   const supabase = getSupabase('metaflow');
   const { data, error } = await supabase
     .from('object_types')
     .select('*')
     .eq('id', id)
-    .eq('tenant_id', DEMO_TENANT_ID)
+    .eq('tenant_id', tenantId)
     .single();
 
   if (error) {
@@ -47,10 +46,13 @@ export async function getObjectType(id: string): Promise<ObjectType | null> {
 }
 
 // Create object type
-export async function createObjectType(input: {
-  displayName: string;
-  config: ObjectTypeConfig;
-}): Promise<ObjectType> {
+export async function createObjectType(
+  tenantId: string,
+  input: {
+    displayName: string;
+    config: ObjectTypeConfig;
+  }
+): Promise<ObjectType> {
   if (!input.displayName?.trim()) {
     throw new Error('Display name is required');
   }
@@ -67,7 +69,7 @@ export async function createObjectType(input: {
   const { data, error } = await supabase
     .from('object_types')
     .insert({
-      tenant_id: DEMO_TENANT_ID,
+      tenant_id: tenantId,
       display_name: input.displayName,
       config: input.config,
     })
@@ -81,6 +83,7 @@ export async function createObjectType(input: {
 // Update object type
 export async function updateObjectType(
   id: string,
+  tenantId: string,
   updates: { displayName?: string; config?: ObjectTypeConfig }
 ): Promise<ObjectType> {
   const updateData: Record<string, unknown> = {
@@ -100,7 +103,7 @@ export async function updateObjectType(
     .from('object_types')
     .update(updateData)
     .eq('id', id)
-    .eq('tenant_id', DEMO_TENANT_ID)
+    .eq('tenant_id', tenantId)
     .select()
     .single();
 
@@ -109,13 +112,13 @@ export async function updateObjectType(
 }
 
 // Delete object type
-export async function deleteObjectType(id: string): Promise<void> {
+export async function deleteObjectType(id: string, tenantId: string): Promise<void> {
   const supabase = getSupabase('metaflow');
   const { error } = await supabase
     .from('object_types')
     .delete()
     .eq('id', id)
-    .eq('tenant_id', DEMO_TENANT_ID);
+    .eq('tenant_id', tenantId);
 
   if (error) throw error;
 }

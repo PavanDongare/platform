@@ -19,7 +19,7 @@ function getSupabaseUrl(): string {
   return `${window.location.protocol}//api.${hostname}`
 }
 
-export function getSupabase(schema: string = 'public'): SupabaseClient {
+export function getSupabase(schema: string = 'public') {
   return createClient(getSupabaseUrl(), supabaseKey, {
     db: { schema }
   })

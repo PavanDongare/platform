@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { useObjectTypes } from '../../lib/hooks';
 import { createRelationship } from '../../lib/queries/relationships';
 import { AlertCircle, ArrowRight } from 'lucide-react';
-import type { ObjectType, RelationshipCardinality, PropertyDef, DEMO_TENANT_ID } from '../../lib/types/ontology';
+import type { ObjectType, RelationshipCardinality, PropertyDef } from '../../lib/types/ontology';
 
 interface Props {
   tenantId: string;
@@ -92,8 +92,7 @@ export function RelationshipForm({ tenantId, onSuccess, onCancel }: Props) {
 
     setLoading(true);
     try {
-      await createRelationship({
-        tenantId,
+      await createRelationship(tenantId, {
         displayName: displayName.trim(),
         cardinality,
         sourceObjectTypeId,
@@ -101,7 +100,6 @@ export function RelationshipForm({ tenantId, onSuccess, onCancel }: Props) {
         sourceDisplayName: sourceDisplayName.trim(),
         targetDisplayName: targetDisplayName.trim(),
         propertyName: propertyName || undefined,
-        junctionDisplayName: cardinality === 'MANY_TO_MANY' ? junctionDisplayName : undefined,
       });
 
       onSuccess();

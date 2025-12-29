@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getSupabase } from '@/lib/supabase';
-import { DEMO_TENANT_ID, type ObjectType } from '../../lib/types/ontology';
+import { useTenant } from '@/lib/auth/tenant-context';
+import type { ObjectType } from '../../lib/types/ontology';
 
 interface Props {
   value: string;  // ID of the referenced object
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export function ForeignKeyDisplay({ value, targetTypeId }: Props) {
+  const { tenantId } = useTenant();
   const [displayValue, setDisplayValue] = useState<string>(value);
   const [loading, setLoading] = useState(true);
 
@@ -29,7 +31,7 @@ export function ForeignKeyDisplay({ value, targetTypeId }: Props) {
           .from('objects')
           .select('*')
           .eq('id', value)
-          .eq('tenant_id', DEMO_TENANT_ID)
+          .eq('tenant_id', tenantId)
           .eq('object_type_id', targetTypeId)
           .single();
 
@@ -44,7 +46,7 @@ export function ForeignKeyDisplay({ value, targetTypeId }: Props) {
           .from('object_types')
           .select('*')
           .eq('id', targetTypeId)
-          .eq('tenant_id', DEMO_TENANT_ID)
+          .eq('tenant_id', tenantId)
           .single();
 
         if (typeError || !typeData) {
@@ -66,7 +68,7 @@ export function ForeignKeyDisplay({ value, targetTypeId }: Props) {
     };
 
     fetchDisplayValue();
-  }, [value, targetTypeId]);
+  }, [value, targetTypeId, tenantId]);
 
   if (loading) {
     return <span className="text-xs text-muted-foreground">Loading...</span>;

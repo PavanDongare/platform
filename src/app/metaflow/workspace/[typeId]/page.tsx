@@ -1,18 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Plus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTenant } from '@/lib/auth/tenant-context';
 import { ObjectsTable } from '../../components/ontology/ObjectsTable';
 import { ObjectForm } from '../../components/ontology/ObjectForm';
-import { getObjectTypeById } from '../../lib/queries/object-types';
-import { getObjectsByType, createObject } from '../../lib/queries/objects';
+import { getObjectType } from '../../lib/queries/object-types';
+import { getObjects, createObject } from '../../lib/queries/objects';
 import type { ObjectType, ObjectInstance } from '../../lib/types/ontology';
 
 export default function WorkspaceTypePage() {
   const params = useParams();
+  const { tenantId } = useTenant();
   const typeId = params.typeId as string;
 
   const [objectType, setObjectType] = useState<ObjectType | null>(null);
@@ -21,11 +23,11 @@ export default function WorkspaceTypePage() {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [typeData, objectsData] = await Promise.all([
-        getObjectTypeById(typeId),
-        getObjectsByType(typeId),
+        getObjectType(typeId, tenantId),
+        getObjects(tenantId, typeId),
       ]);
       setObjectType(typeData);
       setObjects(objectsData);
@@ -34,17 +36,15 @@ export default function WorkspaceTypePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [typeId, tenantId]);
 
   useEffect(() => {
     loadData();
-  }, [typeId]);
+  }, [loadData]);
 
   const handleCreate = async (data: Record<string, any>) => {
-    await createObject({
-      objectTypeId: typeId,
-      data,
-    });
+    if (!objectType) return;
+    await createObject(tenantId, typeId, data, objectType.config, objectType.displayName);
     setShowForm(false);
     await loadData();
   };

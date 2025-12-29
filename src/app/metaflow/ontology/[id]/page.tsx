@@ -5,13 +5,15 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Save, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTenant } from '@/lib/auth/tenant-context';
 import { ObjectTypeConfigForm } from '../../components/ontology/ObjectTypeConfigForm';
-import { getObjectTypeById, updateObjectType, deleteObjectType } from '../../lib/queries/object-types';
+import { getObjectType, updateObjectType, deleteObjectType } from '../../lib/queries/object-types';
 import type { ObjectType } from '../../lib/types/ontology';
 
 export default function ObjectTypeDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const { tenantId } = useTenant();
   const id = params.id as string;
 
   const [objectType, setObjectType] = useState<ObjectType | null>(null);
@@ -23,7 +25,7 @@ export default function ObjectTypeDetailPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await getObjectTypeById(id);
+        const data = await getObjectType(id, tenantId);
         setObjectType(data);
       } catch (err: any) {
         setError(err.message);
@@ -32,7 +34,7 @@ export default function ObjectTypeDetailPage() {
       }
     };
     load();
-  }, [id]);
+  }, [id, tenantId]);
 
   const handleSave = async () => {
     if (!objectType) return;
@@ -46,7 +48,7 @@ export default function ObjectTypeDetailPage() {
     setError(null);
 
     try {
-      await updateObjectType(id, {
+      await updateObjectType(id, tenantId, {
         displayName: objectType.displayName,
         config: objectType.config,
       });
@@ -67,7 +69,7 @@ export default function ObjectTypeDetailPage() {
     setError(null);
 
     try {
-      await deleteObjectType(id);
+      await deleteObjectType(id, tenantId);
       router.push('/metaflow/ontology');
     } catch (err: any) {
       setError(err.message);
@@ -133,7 +135,7 @@ export default function ObjectTypeDetailPage() {
       )}
 
       {/* Form */}
-      <ObjectTypeConfigForm value={objectType} onChange={setObjectType} />
+      <ObjectTypeConfigForm value={objectType} onChange={(updated) => setObjectType(prev => prev ? { ...prev, ...updated } : null)} />
     </div>
   );
 }

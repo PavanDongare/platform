@@ -1,12 +1,13 @@
 import { getSupabase } from '@/lib/supabase'
 import type { Notebook } from '../../types'
 
-export async function getNotebooks(): Promise<Notebook[]> {
+export async function getNotebooks(tenantId: string): Promise<Notebook[]> {
   const supabase = getSupabase('onenote')
 
   const { data, error } = await supabase
     .from('notebooks')
     .select('*')
+    .eq('tenant_id', tenantId)
     .is('deleted_at', null)
     .order('position', { ascending: true })
 
@@ -15,6 +16,8 @@ export async function getNotebooks(): Promise<Notebook[]> {
 }
 
 export async function createNotebook(
+  tenantId: string,
+  userId: string,
   title: string = '',
   color: string = '#3b82f6'
 ): Promise<Notebook> {
@@ -23,6 +26,7 @@ export async function createNotebook(
   const { data: notebooks } = await supabase
     .from('notebooks')
     .select('position')
+    .eq('tenant_id', tenantId)
     .order('position', { ascending: false })
     .limit(1)
 
@@ -30,7 +34,13 @@ export async function createNotebook(
 
   const { data, error } = await supabase
     .from('notebooks')
-    .insert({ title, color, position })
+    .insert({
+      tenant_id: tenantId,
+      user_id: userId,
+      title,
+      color,
+      position
+    })
     .select()
     .single()
 

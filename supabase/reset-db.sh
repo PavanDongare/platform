@@ -50,7 +50,7 @@ echo "Resetting database from declarative schemas..."
 echo ""
 
 # Apply each schema in order
-for schema_dir in schemas/01_dms schemas/02_onenote schemas/03_metaflow; do
+for schema_dir in schemas/00_core schemas/01_dms schemas/02_onenote schemas/03_metaflow; do
   for sql_file in "$schema_dir"/*.sql; do
     if [ -f "$sql_file" ]; then
       echo "  Applying: $sql_file"

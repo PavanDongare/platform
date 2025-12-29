@@ -7,14 +7,16 @@ import { ArrowLeft, Save, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTenant } from '@/lib/auth/tenant-context';
 import { ForeignKeySelect } from '../../../components/ontology/ForeignKeySelect';
-import { getObjectTypeById } from '../../../lib/queries/object-types';
-import { getObjectById, updateObject, deleteObject } from '../../../lib/queries/objects';
+import { getObjectType } from '../../../lib/queries/object-types';
+import { getObject, updateObject, deleteObject } from '../../../lib/queries/objects';
 import type { ObjectType, ObjectInstance } from '../../../lib/types/ontology';
 
 export default function ObjectDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const { tenantId } = useTenant();
   const typeId = params.typeId as string;
   const objectId = params.objectId as string;
 
@@ -30,8 +32,8 @@ export default function ObjectDetailPage() {
     const load = async () => {
       try {
         const [typeData, objectData] = await Promise.all([
-          getObjectTypeById(typeId),
-          getObjectById(objectId),
+          getObjectType(typeId, tenantId),
+          getObject(objectId, tenantId),
         ]);
         setObjectType(typeData);
         setObject(objectData);
@@ -43,7 +45,7 @@ export default function ObjectDetailPage() {
       }
     };
     load();
-  }, [typeId, objectId]);
+  }, [typeId, objectId, tenantId]);
 
   const handleSave = async () => {
     if (!object) return;
@@ -52,7 +54,7 @@ export default function ObjectDetailPage() {
     setError(null);
 
     try {
-      await updateObject(objectId, { data: formData });
+      await updateObject(objectId, tenantId, formData);
       router.push(`/metaflow/workspace/${typeId}`);
     } catch (err: any) {
       setError(err.message);
@@ -70,7 +72,7 @@ export default function ObjectDetailPage() {
     setError(null);
 
     try {
-      await deleteObject(objectId);
+      await deleteObject(objectId, tenantId);
       router.push(`/metaflow/workspace/${typeId}`);
     } catch (err: any) {
       setError(err.message);
@@ -113,7 +115,7 @@ export default function ObjectDetailPage() {
           </Link>
           <div>
             <h1 className="text-2xl font-bold">
-              {object.data[objectType.config.titleKey] || object.semanticId || object.id.slice(0, 8)}
+              {String(object.data[objectType.config.titleKey] || object.semanticId || object.id.slice(0, 8))}
             </h1>
             <p className="text-muted-foreground">
               {objectType.displayName} - {object.semanticId}

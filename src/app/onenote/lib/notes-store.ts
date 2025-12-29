@@ -21,18 +21,29 @@ import {
 } from './queries/pages'
 
 interface NotesStore {
+  // Tenant context
+  tenantId: string | null
+  userId: string | null
+
+  // Current selections
   currentNotebookId: string | null
   currentSectionId: string | null
   currentPageId: string | null
+
+  // Data
   notebooks: Notebook[]
   sections: Section[]
   pages: Page[]
   currentPage: Page | null
+
+  // Loading states
   isLoadingNotebooks: boolean
   isLoadingSections: boolean
   isLoadingPages: boolean
   isLoadingPage: boolean
 
+  // Actions
+  setContext: (tenantId: string, userId: string) => void
   initialize: () => Promise<void>
   setCurrentNotebook: (id: string) => Promise<void>
   setCurrentSection: (id: string) => Promise<void>
@@ -41,7 +52,7 @@ interface NotesStore {
   loadSections: (notebookId: string) => Promise<void>
   loadPages: (sectionId: string) => Promise<void>
   loadPageContent: (pageId: string) => Promise<void>
-  createNotebook: (title?: string, color?: string) => Promise<Notebook>
+  createNotebook: (title?: string, color?: string) => Promise<Notebook | undefined>
   createSection: (notebookId: string, title?: string, color?: string) => Promise<Section>
   createPage: (sectionId: string, title?: string) => Promise<Page>
   updatePageContent: (pageId: string, content: string) => Promise<void>
@@ -52,6 +63,8 @@ interface NotesStore {
 }
 
 export const useNotesStore = create<NotesStore>((set, get) => ({
+  tenantId: null,
+  userId: null,
   currentNotebookId: null,
   currentSectionId: null,
   currentPageId: null,
@@ -64,6 +77,10 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
   isLoadingPages: false,
   isLoadingPage: false,
 
+  setContext: (tenantId: string, userId: string) => {
+    set({ tenantId, userId })
+  },
+
   initialize: async () => {
     await get().loadNotebooks()
     const { notebooks } = get()
@@ -73,9 +90,12 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
   },
 
   loadNotebooks: async () => {
+    const { tenantId } = get()
+    if (!tenantId) return
+
     set({ isLoadingNotebooks: true })
     try {
-      const notebooks = await getNotebooks()
+      const notebooks = await getNotebooks(tenantId)
       set({ notebooks })
     } catch (error) {
       console.error('Failed to load notebooks:', error)
@@ -148,7 +168,10 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
   },
 
   createNotebook: async (title?: string, color?: string) => {
-    const notebook = await createNotebookQuery(title, color)
+    const { tenantId, userId } = get()
+    if (!tenantId || !userId) return undefined
+
+    const notebook = await createNotebookQuery(tenantId, userId, title, color)
     await get().loadNotebooks()
     await get().setCurrentNotebook(notebook.id)
     return notebook

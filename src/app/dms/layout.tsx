@@ -1,9 +1,8 @@
 import { getUserContext } from '@/lib/auth/get-user-context'
 import { TenantProvider } from '@/lib/auth/tenant-context'
 import { redirect } from 'next/navigation'
-import { MetaflowNav } from './components/metaflow-nav'
 
-export default async function MetaflowLayout({
+export default async function DmsLayout({
   children
 }: {
   children: React.ReactNode
@@ -20,10 +19,7 @@ export default async function MetaflowLayout({
       tenantId: ctx.tenantId,
       isAdmin: ctx.isAdmin
     }}>
-      <div className="min-h-screen flex flex-col">
-        <MetaflowNav />
-        <main className="flex-1">{children}</main>
-      </div>
+      {children}
     </TenantProvider>
   )
 }

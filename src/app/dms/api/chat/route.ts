@@ -3,30 +3,26 @@ import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import { TOOLS } from '../../lib/tools'
 import { findRelevantDocs } from '../../lib/search'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  { db: { schema: 'dms' } }
-)
+import { getUserContext } from '@/lib/auth/get-user-context'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 })
 
-async function executeTool(name: string, input: any): Promise<string> {
-  const { data, error } = await supabase.rpc(name, input)
-
-  if (error) {
-    console.error(`Tool ${name} error:`, error)
-    throw new Error(`Failed to execute ${name}: ${error.message}`)
-  }
-
-  return data?.[0]?.message || 'Action completed'
-}
-
 export async function POST(request: NextRequest) {
   try {
+    // Get user context for tenant
+    const ctx = await getUserContext()
+    if (!ctx) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 })
+    }
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { db: { schema: 'dms' } }
+    )
+
     const { message } = await request.json()
 
     if (!message) {
@@ -35,9 +31,11 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    // Filter documents by tenant
     const { data: docs } = await supabase
       .from('documents')
       .select('id, document_type, summary, extracted_data, section_id, sections(name)')
+      .eq('tenant_id', ctx.tenantId)
       .order('created_at', { ascending: false })
 
     const relevantDocs = findRelevantDocs(message, docs || [], 2)
@@ -93,6 +91,22 @@ ${docContext || 'No documents uploaded yet'}${relevantContext}`
         },
       ],
     })
+
+    // Execute tool with tenant context
+    const tenantId = ctx.tenantId
+    async function executeTool(name: string, input: any): Promise<string> {
+      const { data, error } = await supabase.rpc(name, {
+        ...input,
+        p_tenant_id: tenantId
+      })
+
+      if (error) {
+        console.error(`Tool ${name} error:`, error)
+        throw new Error(`Failed to execute ${name}: ${error.message}`)
+      }
+
+      return data?.[0]?.message || 'Action completed'
+    }
 
     if (response.stop_reason === 'tool_use') {
       const toolUseBlock = response.content.find(

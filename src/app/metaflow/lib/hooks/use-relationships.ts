@@ -3,6 +3,7 @@
 // React Hooks for Relationships
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTenant } from '@/lib/auth/tenant-context';
 import type { Relationship } from '../types';
 import {
   getRelationships,
@@ -14,6 +15,7 @@ import {
 } from '../queries/relationships';
 
 export function useRelationships() {
+  const { tenantId } = useTenant();
   const [relationships, setRelationships] = useState<Relationship[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,14 +24,14 @@ export function useRelationships() {
     setLoading(true);
     setError(null);
     try {
-      const data = await getRelationships();
+      const data = await getRelationships(tenantId);
       setRelationships(data);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [tenantId]);
 
   useEffect(() => {
     refetch();
@@ -39,6 +41,7 @@ export function useRelationships() {
 }
 
 export function useRelationship(id: string | null) {
+  const { tenantId } = useTenant();
   const [relationship, setRelationship] = useState<Relationship | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,14 +55,14 @@ export function useRelationship(id: string | null) {
     setLoading(true);
     setError(null);
     try {
-      const data = await getRelationship(id);
+      const data = await getRelationship(id, tenantId);
       setRelationship(data);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, tenantId]);
 
   useEffect(() => {
     refetch();
@@ -69,6 +72,7 @@ export function useRelationship(id: string | null) {
 }
 
 export function useRelationshipsByObjectType(objectTypeId: string | null) {
+  const { tenantId } = useTenant();
   const [relationships, setRelationships] = useState<Relationship[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -82,14 +86,14 @@ export function useRelationshipsByObjectType(objectTypeId: string | null) {
     setLoading(true);
     setError(null);
     try {
-      const data = await getRelationshipsByObjectType(objectTypeId);
+      const data = await getRelationshipsByObjectType(objectTypeId, tenantId);
       setRelationships(data);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
-  }, [objectTypeId]);
+  }, [objectTypeId, tenantId]);
 
   useEffect(() => {
     refetch();

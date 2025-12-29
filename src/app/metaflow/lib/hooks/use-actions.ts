@@ -3,6 +3,7 @@
 // React Hooks for Actions
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTenant } from '@/lib/auth/tenant-context';
 import type { ActionType, ActionListItem } from '../types';
 import {
   getActionTypes,
@@ -15,6 +16,7 @@ import {
 } from '../queries/actions';
 
 export function useActionTypes() {
+  const { tenantId } = useTenant();
   const [actionTypes, setActionTypes] = useState<ActionType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,14 +25,14 @@ export function useActionTypes() {
     setLoading(true);
     setError(null);
     try {
-      const data = await getActionTypes();
+      const data = await getActionTypes(tenantId);
       setActionTypes(data);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [tenantId]);
 
   useEffect(() => {
     refetch();
@@ -40,6 +42,7 @@ export function useActionTypes() {
 }
 
 export function useActionType(id: string | null) {
+  const { tenantId } = useTenant();
   const [actionType, setActionType] = useState<ActionType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,14 +56,14 @@ export function useActionType(id: string | null) {
     setLoading(true);
     setError(null);
     try {
-      const data = await getActionType(id);
+      const data = await getActionType(id, tenantId);
       setActionType(data);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, tenantId]);
 
   useEffect(() => {
     refetch();
@@ -70,6 +73,7 @@ export function useActionType(id: string | null) {
 }
 
 export function useActionList() {
+  const { tenantId } = useTenant();
   const [actions, setActions] = useState<ActionListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,14 +82,14 @@ export function useActionList() {
     setLoading(true);
     setError(null);
     try {
-      const data = await listActions();
+      const data = await listActions(tenantId);
       setActions(data);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [tenantId]);
 
   useEffect(() => {
     refetch();

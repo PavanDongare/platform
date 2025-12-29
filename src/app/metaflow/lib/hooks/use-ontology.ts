@@ -3,6 +3,7 @@
 // React Hooks for Ontology
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTenant } from '@/lib/auth/tenant-context';
 import type { ObjectType, ObjectInstance } from '../types';
 import {
   getObjectTypes,
@@ -24,6 +25,7 @@ import {
 // ==========================================
 
 export function useObjectTypes() {
+  const { tenantId } = useTenant();
   const [objectTypes, setObjectTypes] = useState<ObjectType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,14 +34,14 @@ export function useObjectTypes() {
     setLoading(true);
     setError(null);
     try {
-      const data = await getObjectTypes();
+      const data = await getObjectTypes(tenantId);
       setObjectTypes(data);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [tenantId]);
 
   useEffect(() => {
     refetch();
@@ -49,6 +51,7 @@ export function useObjectTypes() {
 }
 
 export function useObjectType(id: string | null) {
+  const { tenantId } = useTenant();
   const [objectType, setObjectType] = useState<ObjectType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,14 +65,14 @@ export function useObjectType(id: string | null) {
     setLoading(true);
     setError(null);
     try {
-      const data = await getObjectType(id);
+      const data = await getObjectType(id, tenantId);
       setObjectType(data);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, tenantId]);
 
   useEffect(() => {
     refetch();
@@ -83,6 +86,7 @@ export function useObjectType(id: string | null) {
 // ==========================================
 
 export function useObjects(objectTypeId: string | null, limit?: number) {
+  const { tenantId } = useTenant();
   const [objects, setObjects] = useState<ObjectInstance[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -96,14 +100,14 @@ export function useObjects(objectTypeId: string | null, limit?: number) {
     setLoading(true);
     setError(null);
     try {
-      const data = await getObjects(objectTypeId, limit);
+      const data = await getObjects(tenantId, objectTypeId, limit);
       setObjects(data);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
-  }, [objectTypeId, limit]);
+  }, [tenantId, objectTypeId, limit]);
 
   useEffect(() => {
     refetch();
@@ -113,6 +117,7 @@ export function useObjects(objectTypeId: string | null, limit?: number) {
 }
 
 export function useObject(id: string | null) {
+  const { tenantId } = useTenant();
   const [object, setObject] = useState<ObjectInstance | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -126,14 +131,14 @@ export function useObject(id: string | null) {
     setLoading(true);
     setError(null);
     try {
-      const data = await getObject(id);
+      const data = await getObject(id, tenantId);
       setObject(data);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, tenantId]);
 
   useEffect(() => {
     refetch();

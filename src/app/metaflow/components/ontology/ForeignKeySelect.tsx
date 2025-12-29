@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { getSupabase } from '@/lib/supabase';
-import { DEMO_TENANT_ID, type ObjectType, type ObjectInstance } from '../../lib/types/ontology';
+import { useTenant } from '@/lib/auth/tenant-context';
+import type { ObjectType, ObjectInstance } from '../../lib/types/ontology';
 
 interface Props {
   targetTypeId: string;
@@ -18,6 +19,7 @@ interface FKOption {
 }
 
 export function ForeignKeySelect({ targetTypeId, value, onChange, required, displayName }: Props) {
+  const { tenantId } = useTenant();
   const [options, setOptions] = useState<FKOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +41,7 @@ export function ForeignKeySelect({ targetTypeId, value, onChange, required, disp
           .from('object_types')
           .select('*')
           .eq('id', targetTypeId)
-          .eq('tenant_id', DEMO_TENANT_ID)
+          .eq('tenant_id', tenantId)
           .single();
 
         if (typeError) throw typeError;
@@ -58,7 +60,7 @@ export function ForeignKeySelect({ targetTypeId, value, onChange, required, disp
           .from('objects')
           .select('*')
           .eq('object_type_id', targetTypeId)
-          .eq('tenant_id', DEMO_TENANT_ID)
+          .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
           .limit(1000);
 
@@ -83,7 +85,7 @@ export function ForeignKeySelect({ targetTypeId, value, onChange, required, disp
     };
 
     fetchOptions();
-  }, [targetTypeId]);
+  }, [targetTypeId, tenantId]);
 
   if (loading) {
     return (

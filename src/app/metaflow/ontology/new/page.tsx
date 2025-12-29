@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTenant } from '@/lib/auth/tenant-context';
 import { ObjectTypeConfigForm } from '../../components/ontology/ObjectTypeConfigForm';
 import { createObjectType } from '../../lib/queries/object-types';
 import type { ObjectType, ObjectTypeConfig } from '../../lib/types/ontology';
 
 export default function NewObjectTypePage() {
   const router = useRouter();
+  const { tenantId } = useTenant();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +39,7 @@ export default function NewObjectTypePage() {
     setError(null);
 
     try {
-      await createObjectType({
+      await createObjectType(tenantId, {
         displayName: formData.displayName,
         config: formData.config!,
       });

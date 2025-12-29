@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
+import { getUserContext } from '@/lib/auth/get-user-context'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -22,6 +23,12 @@ Return ONLY valid JSON, no other text.`
 
 export async function POST(request: NextRequest) {
   try {
+    // Get user context for tenant and user info
+    const ctx = await getUserContext()
+    if (!ctx) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const formData = await request.formData()
     const file = formData.get('file') as File
 
@@ -81,8 +88,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Upload to Storage
-    const storagePath = `${Date.now()}-${file.name}`
+    // Upload to Storage with tenant prefix for organization
+    const storagePath = `${ctx.tenantId}/${Date.now()}-${file.name}`
     const { error: uploadError } = await supabase.storage
       .from('documents')
       .upload(storagePath, buffer, { contentType: mimeType })
@@ -95,16 +102,17 @@ export async function POST(request: NextRequest) {
       .from('documents')
       .getPublicUrl(storagePath)
 
-    // Save to database
+    // Save to database with tenant and user
     const { data: docData, error: dbError } = await supabase
       .from('documents')
       .insert({
+        tenant_id: ctx.tenantId,
+        user_id: ctx.userId,
         file_url: urlData.publicUrl,
         file_name: file.name,
         document_type: extracted.document_type,
         summary: extracted.summary,
         extracted_data: extracted,
-        uploaded_by: 'Anonymous',
       })
       .select()
       .single()

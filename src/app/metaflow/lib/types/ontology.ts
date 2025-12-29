@@ -138,5 +138,3 @@ export interface UpdateRelationshipInput {
   config?: Record<string, unknown>;
 }
 
-// Demo tenant ID
-export const DEMO_TENANT_ID = '00000000-0000-0000-0000-000000000001';

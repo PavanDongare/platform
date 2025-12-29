@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { Plus, ArrowLeft, ArrowRight, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTenant } from '@/lib/auth/tenant-context';
 import { useRelationships, useObjectTypes } from '../../lib/hooks';
 import { deleteRelationship } from '../../lib/queries/relationships';
 import { RelationshipForm } from '../../components/ontology/RelationshipForm';
-import { DEMO_TENANT_ID } from '../../lib/types/ontology';
 
 const CARDINALITY_LABELS = {
   ONE_TO_MANY: '1:M',
@@ -23,6 +23,7 @@ const CARDINALITY_COLORS = {
 };
 
 export default function RelationshipsPage() {
+  const { tenantId } = useTenant();
   const { relationships, loading: relsLoading, error: relsError, refetch } = useRelationships();
   const { objectTypes, loading: typesLoading } = useObjectTypes();
   const [showForm, setShowForm] = useState(false);
@@ -42,7 +43,7 @@ export default function RelationshipsPage() {
 
     setDeleting(id);
     try {
-      await deleteRelationship(id);
+      await deleteRelationship(id, tenantId);
       refetch();
     } catch (err: any) {
       alert('Error: ' + err.message);
@@ -102,7 +103,7 @@ export default function RelationshipsPage() {
           </CardHeader>
           <CardContent>
             <RelationshipForm
-              tenantId={DEMO_TENANT_ID}
+              tenantId={tenantId}
               onSuccess={() => {
                 setShowForm(false);
                 refetch();
