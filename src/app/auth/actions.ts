@@ -46,3 +46,19 @@ export async function signout() {
   revalidatePath('/', 'layout')
   redirect('/')
 }
+
+export async function loginAsDemo(redirectTo?: string) {
+  const supabase = await createClient()
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email: 'demo@platform.local',
+    password: 'demo123456',
+  })
+
+  if (error) {
+    redirect('/?error=' + encodeURIComponent(error.message))
+  }
+
+  revalidatePath('/', 'layout')
+  redirect(redirectTo || '/')
+}
