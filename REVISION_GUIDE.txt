@@ -1,0 +1,294 @@
+╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                         PLATFORM TECHNICAL DEEP-DIVE - SENIOR DEV Q&A                                        ║
+║                         ═════════════════════════════════════════════════                                    ║
+║                         Cover the answer column to test yourself!                                            ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ SECTION 1: ARCHITECTURE DECISIONS                                                                            │
+├──────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                                              │
+│  QUESTION                                    │  ANSWER                                                       │
+│  ────────────────────────────────z──────────  │  ────────────────────────────────────────────────────────────│
+│                                              │                                                               │
+│  Why monolith with 3 apps instead of         │  Shared infrastructure (Supabase client, UI, auth).          │
+│  separate repos/microservices?               │  Simpler deployment. No inter-service latency.               │
+│                                              │  Apps are independent enough to not conflict.                │
+│                                              │                                                               │
+│  Why separate database schemas per app       │  Logical isolation without separate DBs. Easier              │
+│  instead of one unified schema?              │  to reason about. Can migrate/drop independently.            │
+│                                              │  Clear ownership boundaries.                                 │
+│                                              │                                                               │
+│  Why JSONB for object_types config and       │  Schema flexibility - properties can vary per type.          │
+│  extracted_data instead of normalized        │  No ALTER TABLE for new fields. Trade-off: harder            │
+│  columns?                                    │  to query/index specific nested values.                      │
+│                                              │                                                               │
+│  Why Zustand for OneNote but not for DMS     │  OneNote has complex nested state (notebooks→sections        │
+│  or Metaflow?                                │  →pages) that needs global access. DMS/Metaflow              │
+│                                              │  use simpler fetch-on-mount patterns with hooks.             │
+│                                              │                                                               │
+│  Why soft deletes (deleted_at) in OneNote    │  Data recovery. Audit trail. Undo functionality.             │
+│  but likely hard deletes in DMS?             │  DMS docs are less "precious" - user can re-upload.          │
+│                                              │                                                               │
+│  Why declarative SQL schemas with            │  Infrastructure-as-code. Reproducible. Version               │
+│  reset-db.sh instead of migrations?          │  controlled. Simpler for early-stage - but won't             │
+│                                              │  scale for production with existing data.                    │
+│                                              │                                                               │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ SECTION 2: DMS - TECHNICAL DEPTH                                                                             │
+├──────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                                              │
+│  QUESTION                                    │  ANSWER                                                       │
+│  ──────────────────────────────────────────  │  ────────────────────────────────────────────────────────────│
+│                                              │                                                               │
+│  Why expose Claude tools (update_section,    │  Structured outputs. Claude decides when to act.             │
+│  delete_documents) via tool_use instead of   │  Better than parsing free text. Anthropic's tool_use         │
+│  just parsing Claude's text response?        │  guarantees valid JSON. Audit trail of actions.              │
+│                                              │                                                               │
+│  What's the risk of Claude having delete     │  Accidental bulk deletes. Prompt injection via doc           │
+│  permissions? How would you mitigate?        │  content. Mitigation: soft deletes, confirmation             │
+│                                              │  step, rate limiting, undo window.                           │
+│                                              │                                                               │
+│  Why use RPC functions (delete_documents)    │  Atomic operations. Avoid N+1 API calls. Database            │
+│  instead of multiple Supabase queries?       │  handles transaction. Less network overhead.                 │
+│                                              │                                                               │
+│  What happens if Claude API is slow/down     │  Upload blocks. UX degrades. Should add: timeout,            │
+│  during upload? How would you improve?       │  background job queue, fallback to no-AI upload,             │
+│                                              │  retry logic, or defer extraction to async worker.           │
+│                                              │                                                               │
+│  Why store files in Supabase Storage but     │  Separate concerns. Blob storage optimized for               │
+│  metadata in PostgreSQL?                     │  files. PostgreSQL for queries/indexes. Can query            │
+│                                              │  metadata without loading file bytes.                        │
+│                                              │                                                               │
+│  How would you implement full-text search    │  PostgreSQL FTS on extracted_data->>'summary'.               │
+│  across documents?                           │  Or: vector embeddings in pgvector for semantic              │
+│                                              │  search. Could also use Supabase's built-in FTS.             │
+│                                              │                                                               │
+│  What's missing for production readiness?    │  Auth/RLS, file size limits, virus scanning,                 │
+│                                              │  rate limiting, proper error handling, retry                 │
+│                                              │  logic, background job processing.                           │
+│                                              │                                                               │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ SECTION 3: ONENOTE - TECHNICAL DEPTH                                                                         │
+├──────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                                              │
+│  QUESTION                                    │  ANSWER                                                       │
+│  ──────────────────────────────────────────  │  ────────────────────────────────────────────────────────────│
+│                                              │                                                               │
+│  Why position-based ordering instead of      │  Flexible drag-drop reorder. Don't need to update            │
+│  created_at ordering?                        │  other rows. Can insert at any position. Trade-off:          │
+│                                              │  gaps accumulate, may need periodic normalization.           │
+│                                              │                                                               │
+│  How does Zustand persist state across       │  It doesn't by default - refetches on mount.                 │
+│  page refreshes? What's the trade-off?       │  Trade-off: fast TTI but brief loading state.                │
+│                                              │  Could add zustand/persist for offline-first.                │
+│                                              │                                                               │
+│  If two users edit same page, what happens?  │  Last write wins. No real-time sync. Would need              │
+│  How would you add real-time collab?         │  Supabase Realtime subscriptions + CRDT/OT for               │
+│                                              │  conflict resolution (tldraw has Y.js support).              │
+│                                              │                                                               │
+│  Why tldraw for the editor instead of a      │  Canvas-based = infinite canvas, drawings, shapes.           │
+│  traditional rich text editor (Slate,        │  Good for visual notes. Trade-off: heavier,                  │
+│  ProseMirror)?                               │  non-standard data format, accessibility concerns.           │
+│                                              │                                                               │
+│  How are timestamps auto-updated?            │  PostgreSQL triggers on UPDATE. Keeps updated_at             │
+│                                              │  consistent without app code. Defined in schema SQL.         │
+│                                              │                                                               │
+│  What's the N+1 query risk with notebooks    │  Fetching notebooks, then sections for each, then            │
+│  →sections→pages? How is it handled?         │  pages for each = N+1. Mitigated by fetching all             │
+│                                              │  at once via separate parallel queries, not nested.          │
+│                                              │                                                               │
+│  How would you implement search across       │  FTS on pages.content. Index: GIN on tsvector.               │
+│  all pages?                                  │  Or expose via API route with ilike. Consider                │
+│                                              │  search-as-you-type with debounce.                           │
+│                                              │                                                               │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ SECTION 4: METAFLOW - TECHNICAL DEPTH                                                                        │
+├──────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                                              │
+│  QUESTION                                    │  ANSWER                                                       │
+│  ──────────────────────────────────────────  │  ────────────────────────────────────────────────────────────│
+│                                              │                                                               │
+│  Why model this as "ontology" instead of     │  Domain flexibility. Users define their own schema           │
+│  just database tables?                       │  at runtime. No code changes for new entity types.           │
+│                                              │  Trade-off: complexity, harder to optimize queries.          │
+│                                              │                                                               │
+│  How are M:N relationships implemented       │  Junction tables. junctionObjectTypeId points to             │
+│  differently from 1:N?                       │  an ObjectType marked isJunction:true. Creates               │
+│                                              │  linking records in that junction type's objects.            │
+│                                              │                                                               │
+│  Why store all object instances in one       │  Flexibility - schema changes don't need migrations.         │
+│  'objects' table with JSONB instead of       │  Trade-off: no column-level constraints, harder              │
+│  generated tables per ObjectType?            │  to index, can't use SQL joins easily.                       │
+│                                              │                                                               │
+│  What is "declarative" vs "function-backed"  │  Declarative = rules defined in JSON, interpreted            │
+│  execution in Actions?                       │  at runtime. Function-backed = custom code executed.         │
+│                                              │  Declarative is safer, auditable, no-code friendly.          │
+│                                              │                                                               │
+│  How would you enforce submissionCriteria    │  Evaluate expression tree against object data.               │
+│  (conditional action execution)?             │  Return true/false. Block action if criteria fail.           │
+│                                              │  Needs expression evaluator (could use mathjs or custom).    │
+│                                              │                                                               │
+│  What's the risk of user-defined ontologies  │  Unbounded growth. Circular relationships. Invalid           │
+│  without validation?                         │  property types. Should validate: no cycles, valid           │
+│                                              │  property definitions, relationship consistency.             │
+│                                              │                                                               │
+│  How does multi-tenancy work? What's         │  tenant_id FK on object_types. RLS would filter              │
+│  missing for true isolation?                 │  by tenant. Currently hardcoded demo tenant. Missing:        │
+│                                              │  proper auth, RLS policies, tenant provisioning.             │
+│                                              │                                                               │
+│  Why ReactFlow + elkjs for visualization?    │  ReactFlow: interactive node-based graphs. elkjs:            │
+│                                              │  automatic layout algorithms (layered DAG). No               │
+│                                              │  manual positioning needed for clean diagrams.               │
+│                                              │                                                               │
+│  How would you optimize querying objects     │  GIN index on objects.data JSONB. Materialized views         │
+│  by property values?                         │  for common queries. Or: generate actual tables              │
+│                                              │  per ObjectType (view_metadata table hints at this).         │
+│                                              │                                                               │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ SECTION 5: CROSS-CUTTING CONCERNS                                                                            │
+├──────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                                              │
+│  QUESTION                                    │  ANSWER                                                       │
+│  ──────────────────────────────────────────  │  ────────────────────────────────────────────────────────────│
+│                                              │                                                               │
+│  How does getSupabase(schema) work and why   │  Factory returns client configured for specific              │
+│  is it needed?                               │  schema search_path. Supabase doesn't namespace              │
+│                                              │  by default - this isolates app data cleanly.                │
+│                                              │                                                               │
+│  What authentication is in place? What's     │  None visible. All data is public. Need: Supabase            │
+│  the security posture?                       │  Auth, RLS policies per table, API rate limiting,            │
+│                                              │  input sanitization. Currently dev-only safe.                │
+│                                              │                                                               │
+│  How would you add user-specific data        │  Supabase Auth. Add user_id FK to relevant tables.           │
+│  isolation?                                  │  RLS policies: user can only CRUD their own rows.            │
+│                                              │  Notebooks, documents belong to authenticated user.          │
+│                                              │                                                               │
+│  What happens if Supabase is unreachable?    │  App crashes or shows errors. No offline support.            │
+│  How would you add resilience?               │  Add: error boundaries, retry logic, optimistic              │
+│                                              │  UI updates, local cache (IndexedDB), service worker.        │
+│                                              │                                                               │
+│  Why Radix UI wrapped in /components/ui/?    │  Consistent styling. Single source of truth for              │
+│                                              │  component variants. Easier to swap underlying               │
+│                                              │  library later. shadcn/ui pattern.                           │
+│                                              │                                                               │
+│  How would you instrument this for           │  Vercel Analytics or custom. Track: page views,              │
+│  observability?                              │  API latency, error rates. Add Sentry for errors.            │
+│                                              │  OpenTelemetry for distributed tracing.                      │
+│                                              │                                                               │
+│  What's the deployment story?                │  Vercel (Next.js native). Supabase hosted DB.                │
+│                                              │  Environment vars for API keys. PWA for mobile.              │
+│                                              │                                                               │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ SECTION 6: TRADE-OFFS & TECHNICAL DEBT                                                                       │
+├──────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                                              │
+│  QUESTION                                    │  ANSWER                                                       │
+│  ──────────────────────────────────────────  │  ────────────────────────────────────────────────────────────│
+│                                              │                                                               │
+│  What are the top 3 scalability concerns?    │  1. Single JSONB objects table (query perf)                  │
+│                                              │  2. No caching layer (every request hits DB)                 │
+│                                              │  3. Claude API as sync dependency (latency)                  │
+│                                              │                                                               │
+│  If you had to pick one app to rewrite,      │  Metaflow. Most complex, JSONB-heavy. Would                  │
+│  which and why?                              │  consider: generated tables per ObjectType,                  │
+│                                              │  proper query builder, typed API layer.                      │
+│                                              │                                                               │
+│  What testing is missing?                    │  Everything. Unit tests for utils/hooks. Integration         │
+│                                              │  tests for API routes. E2E tests (Playwright).               │
+│                                              │  Schema validation tests. Load testing.                      │
+│                                              │                                                               │
+│  How would apps share data if needed         │  Currently isolated by schema. Options: cross-schema         │
+│  (e.g., link doc to metaflow object)?        │  foreign keys, shared 'links' table, or app-level            │
+│                                              │  integration via API. Keep loose coupling.                   │
+│                                              │                                                               │
+│  What's the biggest "hack" in this           │  Hardcoded demo tenant in Metaflow. Declarative              │
+│  codebase?                                   │  schema reset (can't migrate with data).                     │
+│                                              │  No auth = everything is public.                             │
+│                                              │                                                               │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ QUICK SYSTEM DESIGN QUESTIONS (Interview-Style)                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+    Q: "Walk me through what happens when a user uploads a PDF in DMS."
+    ─────────────────────────────────────────────────────────────────────────────────────────────
+    A: 1. User drops file → POST /api/upload with multipart form data
+       2. API route receives file buffer + metadata
+       3. File sent to Claude API with extraction prompt
+       4. Claude returns: document_type, summary, entities, dates
+       5. File uploaded to Supabase Storage bucket
+       6. Metadata + extracted_data inserted into dms.documents
+       7. Client refetches document list via useDocuments hook
+       8. DocumentGrid re-renders with new document
+
+    Q: "How would you add real-time collaboration to OneNote?"
+    ─────────────────────────────────────────────────────────────────────────────────────────────
+    A: 1. Enable Supabase Realtime on pages table
+       2. Subscribe to changes in useNotesStore
+       3. For conflict resolution, integrate Y.js (CRDT) with tldraw
+       4. Broadcast local changes, merge remote changes
+       5. Add presence indicators (who's viewing/editing)
+       6. Consider operational transform for text content
+
+    Q: "A user reports Metaflow visualization is slow with 500 object types. Debug it."
+    ─────────────────────────────────────────────────────────────────────────────────────────────
+    A: 1. Profile: is it data fetch or render? (Check Network/React DevTools)
+       2. If fetch: add pagination, only load visible types, index queries
+       3. If render: elkjs layout is O(n²) - virtualize nodes, lazy render
+       4. Cache layout positions (ontology_layouts table exists!)
+       5. Consider: debounce layout recalc, web worker for elkjs
+
+    Q: "Design a feature: link a DMS document to a Metaflow object"
+    ─────────────────────────────────────────────────────────────────────────────────────────────
+    A: Option 1: Cross-schema FK (document_id in metaflow.objects.data)
+       Option 2: Shared 'links' table in public schema (source_type, source_id, target_type, target_id)
+       Option 3: API-level linking (store reference, resolve at read time)
+       Recommend Option 2: explicit, queryable, no tight coupling
+
+╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ ARCHITECTURE DIAGRAM                                                                                         ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+                                 ┌────────────────────────────────────┐
+                                 │           NEXT.JS APP              │
+                                 │  ┌──────┐ ┌────────┐ ┌──────────┐  │
+                                 │  │ DMS  │ │OneNote │ │ Metaflow │  │
+                                 │  └──┬───┘ └───┬────┘ └────┬─────┘  │
+                                 │     │         │           │        │
+                                 │  ┌──┴─────────┴───────────┴──┐     │
+                                 │  │    Shared: UI, Utils,     │     │
+                                 │  │    Supabase Client        │     │
+                                 │  └─────────────┬─────────────┘     │
+                                 └────────────────┼──────────────────-┘
+                                                  │
+                    ┌─────────────────────────────┼─────────────────────────────┐
+                    │                             │                             │
+                    ▼                             ▼                             ▼
+         ┌──────────────────┐          ┌──────────────────┐          ┌──────────────────┐
+         │   Claude API     │          │ Supabase Storage │          │    Supabase DB   │
+         │ (AI extraction,  │          │ (file blobs)     │          │ (PostgreSQL)     │
+         │  chat, tools)    │          └──────────────────┘          │                  │
+         └──────────────────┘                                        │  ┌────────────┐  │
+                                                                     │  │ 01_dms     │  │
+                                                                     │  ├────────────┤  │
+                                                                     │  │ 02_onenote │  │
+                                                                     │  ├────────────┤  │
+                                                                     │  │ 03_metaflow│  │
+                                                                     │  └────────────┘  │
+                                                                     └──────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                                         END OF REVISION GUIDE                                                ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
