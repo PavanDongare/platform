@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import { FileText, PenTool, Network, LucideIcon, LogOut, User } from 'lucide-react'
+import { FileText, PenTool, Network, LucideIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { loginAsDemo, signout } from './auth/actions'
+import { loginAsDemo } from './auth/actions'
 import { Button } from '@/components/ui/button'
 
 const apps: {
@@ -51,39 +51,7 @@ export default async function HomePage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8">
-      {/* User bar */}
-      <div className="absolute top-4 right-4 flex items-center gap-3">
-        {user ? (
-          <>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <User className="w-4 h-4" />
-              <span>{user.email}</span>
-            </div>
-            <form action={signout}>
-              <Button variant="outline" size="sm" type="submit">
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
-            </form>
-          </>
-        ) : (
-          <>
-            <Link href="/auth/login">
-              <Button variant="outline" size="sm">Sign In</Button>
-            </Link>
-            <form action={async () => {
-              'use server'
-              await loginAsDemo()
-            }}>
-              <Button size="sm" type="submit">
-                Try Demo
-              </Button>
-            </form>
-          </>
-        )}
-      </div>
-
+    <div className="h-full flex flex-col items-center justify-center p-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl">
         {apps.map((app) => (
           <div
@@ -122,8 +90,6 @@ export default async function HomePage() {
           </div>
         ))}
       </div>
-
-      <p className="absolute bottom-8 text-xs text-muted-foreground">Platform</p>
     </div>
   )
 }

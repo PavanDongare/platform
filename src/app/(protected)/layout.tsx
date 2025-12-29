@@ -2,7 +2,7 @@ import { getUserContext } from '@/lib/auth/get-user-context'
 import { TenantProvider } from '@/lib/auth/tenant-context'
 import { redirect } from 'next/navigation'
 
-export default async function OnenoteLayout({
+export default async function ProtectedLayout({
   children
 }: {
   children: React.ReactNode
