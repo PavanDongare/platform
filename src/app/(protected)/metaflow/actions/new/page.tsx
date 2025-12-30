@@ -1,24 +1,45 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Plus, X, Trash2, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, X, Trash2, Loader2, Play, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
 import { useTenant } from '@/lib/auth/tenant-context';
 import { useObjectTypes } from '../../lib/hooks/use-ontology';
 import { createActionType } from '../../lib/hooks/use-actions';
+import { getSupabase } from '@/lib/supabase';
 import type { ActionParameter, ActionRule, PropertyValueConfig } from '../../lib/types/actions';
+
+// Chain Builder Types
+interface ChainOption {
+  key: string;
+  label: string;
+  type: 'terminal' | 'M:1' | '1:M' | 'M:N';
+  baseType?: string;
+  targetTypeId?: string;
+}
+
+interface ChainNode {
+  type: 'parameter' | 'property';
+  value: string | null;
+  options: ChainOption[];
+  requiresQuantifier?: boolean;
+  quantifierValue?: 'ANY' | 'ALL';
+  targetTypeId?: string;
+}
 
 export default function NewActionPage() {
   const router = useRouter();
@@ -35,6 +56,17 @@ export default function NewActionPage() {
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Submission Criteria State
+  const [chain, setChain] = useState<ChainNode[]>([]);
+  const [operator, setOperator] = useState<string>('equals');
+  const [compareValue, setCompareValue] = useState<string>('');
+  const [isTerminal, setIsTerminal] = useState(false);
+  const [showTesting, setShowTesting] = useState(false);
+  const [testObjectId, setTestObjectId] = useState<string>('');
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [testingInProgress, setTestingInProgress] = useState(false);
+  const [availableTestObjects, setAvailableTestObjects] = useState<{ id: string; display: string }[]>([]);
 
   // Parameter management
   const addParameter = () => {
@@ -136,6 +168,324 @@ export default function NewActionPage() {
     return null;
   };
 
+  // ===== SUBMISSION CRITERIA CHAIN BUILDER =====
+
+  // Get object-reference parameters for first dropdown
+  const getParameterOptions = (): ChainOption[] => {
+    return parameters
+      .filter((p) => p.type === 'object-reference' && p.objectTypeId)
+      .map((p) => ({
+        key: p.name,
+        label: p.displayName || p.name,
+        type: 'M:1' as const,
+        targetTypeId: p.objectTypeId,
+      }));
+  };
+
+  // Get properties + relationships for an object type
+  const getOptionsForType = (objectTypeId: string): ChainOption[] => {
+    const objType = objectTypes.find((t) => t.id === objectTypeId);
+    if (!objType) return [];
+
+    const options: ChainOption[] = [];
+    const props = objType.config?.properties || {};
+
+    // Terminal properties (non-reference)
+    Object.entries(props).forEach(([key, prop]: [string, any]) => {
+      if (prop.type !== 'object-reference') {
+        options.push({
+          key,
+          label: prop.displayName || key,
+          type: 'terminal',
+          baseType: prop.type,
+        });
+      }
+    });
+
+    // M:1 FK references
+    Object.entries(props).forEach(([key, prop]: [string, any]) => {
+      if (prop.type === 'object-reference' && prop.referenceConfig?.targetObjectTypeId) {
+        const targetType = objectTypes.find((t) => t.id === prop.referenceConfig?.targetObjectTypeId);
+        options.push({
+          key,
+          label: `${prop.displayName || key} (→ ${targetType?.displayName || 'object'})`,
+          type: 'M:1',
+          targetTypeId: prop.referenceConfig.targetObjectTypeId,
+        });
+      }
+    });
+
+    return options;
+  };
+
+  // Handle chain navigation
+  const handleChainSelect = (index: number, value: string) => {
+    const node = chain[index];
+    const option = node.options.find((o) => o.key === value);
+    if (!option) return;
+
+    const newChain = [...chain];
+    newChain[index] = { ...node, value };
+
+    // Remove nodes after this
+    newChain.splice(index + 1);
+
+    // Reset terminal state
+    setIsTerminal(false);
+
+    if (option.type === 'terminal') {
+      setChain(newChain);
+      setIsTerminal(true);
+      return;
+    }
+
+    if (option.type === '1:M' || option.type === 'M:N') {
+      newChain[index].requiresQuantifier = true;
+      newChain[index].targetTypeId = option.targetTypeId;
+      setChain(newChain);
+      return;
+    }
+
+    // M:1 - add next node immediately
+    if (option.type === 'M:1' && option.targetTypeId) {
+      newChain.push({
+        type: 'property',
+        value: null,
+        options: getOptionsForType(option.targetTypeId),
+      });
+      setChain(newChain);
+    }
+  };
+
+  // Handle ANY/ALL quantifier selection
+  const handleQuantifierSelect = (index: number, quantifier: 'ANY' | 'ALL') => {
+    const newChain = [...chain];
+    newChain[index].quantifierValue = quantifier;
+    newChain[index].requiresQuantifier = false;
+
+    const targetTypeId = newChain[index].targetTypeId;
+    if (targetTypeId) {
+      newChain.push({
+        type: 'property',
+        value: null,
+        options: getOptionsForType(targetTypeId),
+      });
+    }
+
+    setChain(newChain);
+  };
+
+  // Build Expression object from chain
+  const buildSubmissionCriteriaFromChain = (): any | null => {
+    if (!isTerminal || chain.length === 0 || !chain[0].value || !operator) {
+      return null;
+    }
+
+    // For null operators, we don't need compareValue
+    if (!['is_null', 'is_not_null'].includes(operator) && !compareValue) {
+      return null;
+    }
+
+    // Build segments from chain (skip first which is parameter)
+    const segments: any[] = [];
+    for (let i = 1; i < chain.length; i++) {
+      const node = chain[i];
+      if (!node.value) break;
+
+      const option = node.options.find((o) => o.key === node.value);
+      if (!option || option.type === 'terminal') break;
+
+      const segment: any = {
+        propertyKey: node.value,
+        objectTypeId: option.targetTypeId,
+        relationshipType: option.type === 'M:N' ? 'M:N' : 'M:1',
+      };
+
+      if (node.quantifierValue) {
+        segment.quantifier = node.quantifierValue;
+      }
+
+      segments.push(segment);
+    }
+
+    // Get terminal property key
+    const lastNode = chain[chain.length - 1];
+    const terminalPropertyKey = lastNode?.value || '';
+
+    return {
+      type: 'comparison',
+      left: {
+        type: 'property',
+        path: {
+          baseParameterName: chain[0]?.value || '',
+          segments,
+          terminalPropertyKey,
+        },
+      },
+      operator,
+      right: {
+        type: 'static',
+        value: compareValue,
+      },
+    };
+  };
+
+  // Human-readable description
+  const getConditionDescription = (): string => {
+    if (chain.length === 0 || !chain[0].value) {
+      return 'No condition defined';
+    }
+
+    let description = '';
+
+    for (let i = 0; i < chain.length; i++) {
+      const node = chain[i];
+      if (!node.value) break;
+
+      const selectedOption = node.options.find((o) => o.key === node.value);
+      if (!selectedOption) break;
+
+      if (i === 0) {
+        description += selectedOption.label;
+      } else {
+        description += ` → ${selectedOption.label}`;
+      }
+
+      if (node.quantifierValue) {
+        description += ` (${node.quantifierValue === 'ANY' ? 'Any' : 'All'})`;
+      }
+    }
+
+    if (isTerminal && operator) {
+      const operatorSymbol =
+        operator === 'equals' ? '=' :
+        operator === 'not_equals' ? '≠' :
+        operator === 'gt' ? '>' :
+        operator === 'gte' ? '≥' :
+        operator === 'lt' ? '<' :
+        operator === 'lte' ? '≤' :
+        operator === 'is_null' ? 'is null' :
+        operator === 'is_not_null' ? 'is not null' :
+        operator;
+
+      if (['is_null', 'is_not_null'].includes(operator)) {
+        description += ` ${operatorSymbol}`;
+      } else if (compareValue) {
+        description += ` ${operatorSymbol} "${compareValue}"`;
+      }
+    }
+
+    return description;
+  };
+
+  // Clear criteria
+  const clearCriteria = () => {
+    const paramOptions = getParameterOptions();
+    setChain(paramOptions.length > 0 ? [{ type: 'parameter', value: null, options: paramOptions }] : []);
+    setIsTerminal(false);
+    setCompareValue('');
+    setOperator('equals');
+    setTestResult(null);
+    setTestObjectId('');
+  };
+
+  // Initialize chain when object-reference parameters exist
+  useEffect(() => {
+    const paramOptions = getParameterOptions();
+    if (paramOptions.length > 0 && chain.length === 0) {
+      setChain([{ type: 'parameter', value: null, options: paramOptions }]);
+    } else if (paramOptions.length === 0 && chain.length > 0) {
+      setChain([]);
+      setIsTerminal(false);
+    }
+  }, [parameters, objectTypes]);
+
+  // Fetch test objects when testing is opened
+  useEffect(() => {
+    if (showTesting && chain.length > 0 && chain[0].value) {
+      fetchTestObjects();
+    }
+  }, [showTesting, chain[0]?.value]);
+
+  const fetchTestObjects = async () => {
+    try {
+      const firstParam = parameters.find((p) => p.name === chain[0]?.value);
+      if (!firstParam || firstParam.type !== 'object-reference' || !firstParam.objectTypeId) {
+        return;
+      }
+
+      const supabase = getSupabase('metaflow');
+      const { data, error } = await supabase
+        .from('objects')
+        .select('id, data')
+        .eq('tenant_id', tenantId)
+        .eq('object_type_id', firstParam.objectTypeId)
+        .limit(50);
+
+      if (error) throw error;
+
+      const objType = objectTypes.find((t) => t.id === firstParam.objectTypeId);
+      const titleKey = objType?.config?.titleKey || 'id';
+
+      const objects = (data || []).map((obj: any) => ({
+        id: obj.id,
+        display: obj.data?.[titleKey] || obj.id,
+      }));
+
+      setAvailableTestObjects(objects);
+    } catch (err) {
+      console.error('Failed to fetch test objects:', err);
+      setAvailableTestObjects([]);
+    }
+  };
+
+  // Test the condition
+  const handleTestCondition = async () => {
+    if (!testObjectId || !isTerminal) {
+      setTestResult({ success: false, message: 'Please complete the condition and select a test object' });
+      return;
+    }
+
+    setTestingInProgress(true);
+    setTestResult(null);
+
+    try {
+      const supabase = getSupabase('metaflow');
+      const expression = buildSubmissionCriteriaFromChain();
+
+      if (!expression) {
+        setTestResult({ success: false, message: 'Invalid criteria configuration' });
+        setTestingInProgress(false);
+        return;
+      }
+
+      const { data, error } = await supabase.rpc('evaluate_submission_criteria', {
+        p_expression: expression,
+        p_parameters: { [chain[0]?.value || '']: testObjectId },
+        p_tenant_id: tenantId,
+      });
+
+      if (error) throw error;
+
+      const passed = data?.passed === true;
+      setTestResult({
+        success: passed,
+        message: passed
+          ? '✓ Condition PASSED - The test object satisfies the criteria'
+          : '✗ Condition FAILED - The test object does not satisfy the criteria',
+      });
+    } catch (err: any) {
+      setTestResult({
+        success: false,
+        message: `Error: ${err.message}`,
+      });
+    } finally {
+      setTestingInProgress(false);
+    }
+  };
+
+  // ===== END SUBMISSION CRITERIA =====
+
   const handleSave = async () => {
     if (!displayName.trim()) {
       setError('Display name is required');
@@ -161,6 +511,12 @@ export default function NewActionPage() {
         parameters,
         description: description || undefined,
       };
+
+      // Add submission criteria if defined
+      const criteria = buildSubmissionCriteriaFromChain();
+      if (criteria) {
+        config.submissionCriteria = [criteria];
+      }
 
       if (executionType === 'declarative') {
         config.rules = rules;
@@ -536,6 +892,194 @@ export default function NewActionPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Submission Criteria */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Submission Criteria</CardTitle>
+          <CardDescription>
+            Define when this action can be executed (optional)
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {parameters.filter((p) => p.type === 'object-reference' && p.objectTypeId).length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4 border border-dashed rounded">
+              Add an object-reference parameter first to define criteria
+            </p>
+          ) : (
+            <>
+              {/* Chain Builder */}
+              <div className="flex flex-wrap items-center gap-2">
+                {chain.map((node, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    {index > 0 && <span className="text-muted-foreground">→</span>}
+
+                    <Select
+                      value={node.value || ''}
+                      onValueChange={(v) => handleChainSelect(index, v)}
+                    >
+                      <SelectTrigger className="w-48">
+                        <SelectValue placeholder={index === 0 ? 'Select parameter...' : 'Select property...'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {/* Group terminal properties */}
+                        {node.options.filter((o) => o.type === 'terminal').length > 0 && (
+                          <SelectGroup>
+                            <SelectLabel>Properties</SelectLabel>
+                            {node.options
+                              .filter((o) => o.type === 'terminal')
+                              .map((opt) => (
+                                <SelectItem key={opt.key} value={opt.key}>
+                                  {opt.label}
+                                </SelectItem>
+                              ))}
+                          </SelectGroup>
+                        )}
+                        {/* Group M:1 references */}
+                        {node.options.filter((o) => o.type === 'M:1').length > 0 && (
+                          <SelectGroup>
+                            <SelectLabel>References (→)</SelectLabel>
+                            {node.options
+                              .filter((o) => o.type === 'M:1')
+                              .map((opt) => (
+                                <SelectItem key={opt.key} value={opt.key}>
+                                  {opt.label}
+                                </SelectItem>
+                              ))}
+                          </SelectGroup>
+                        )}
+                      </SelectContent>
+                    </Select>
+
+                    {/* Quantifier selection for 1:M / M:N */}
+                    {node.requiresQuantifier && (
+                      <div className="flex gap-1 bg-yellow-100 dark:bg-yellow-900/30 p-1 rounded">
+                        <Button
+                          size="sm"
+                          variant={node.quantifierValue === 'ANY' ? 'default' : 'outline'}
+                          onClick={() => handleQuantifierSelect(index, 'ANY')}
+                          className="h-7"
+                        >
+                          Any
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={node.quantifierValue === 'ALL' ? 'default' : 'outline'}
+                          onClick={() => handleQuantifierSelect(index, 'ALL')}
+                          className="h-7"
+                        >
+                          All
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {/* Operator & Value (when terminal property is selected) */}
+                {isTerminal && (
+                  <>
+                    <Select value={operator} onValueChange={setOperator}>
+                      <SelectTrigger className="w-24">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="equals">=</SelectItem>
+                        <SelectItem value="not_equals">≠</SelectItem>
+                        <SelectItem value="gt">&gt;</SelectItem>
+                        <SelectItem value="gte">≥</SelectItem>
+                        <SelectItem value="lt">&lt;</SelectItem>
+                        <SelectItem value="lte">≤</SelectItem>
+                        <SelectItem value="is_null">is null</SelectItem>
+                        <SelectItem value="is_not_null">is not null</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    {!['is_null', 'is_not_null'].includes(operator) && (
+                      <Input
+                        value={compareValue}
+                        onChange={(e) => setCompareValue(e.target.value)}
+                        placeholder="value"
+                        className="w-32"
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* Description */}
+              {chain.length > 0 && chain[0].value && (
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Condition:</strong> {getConditionDescription()}
+                  </p>
+                  <Button variant="ghost" size="sm" onClick={clearCriteria}>
+                    <RotateCcw className="w-4 h-4 mr-1" />
+                    Clear
+                  </Button>
+                </div>
+              )}
+
+              {/* Testing Section */}
+              {isTerminal && (compareValue || ['is_null', 'is_not_null'].includes(operator)) && (
+                <div className="border-t pt-4 mt-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <Label className="text-sm font-medium">Test Condition</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowTesting(!showTesting)}
+                    >
+                      {showTesting ? 'Hide' : 'Show'} Testing
+                    </Button>
+                  </div>
+
+                  {showTesting && (
+                    <div className="space-y-3">
+                      <div className="flex gap-2">
+                        <Select value={testObjectId} onValueChange={setTestObjectId}>
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Select test object..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableTestObjects.map((obj) => (
+                              <SelectItem key={obj.id} value={obj.id}>
+                                {obj.display}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        <Button
+                          onClick={handleTestCondition}
+                          disabled={!testObjectId || testingInProgress}
+                        >
+                          {testingInProgress ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Play className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </div>
+
+                      {testResult && (
+                        <div
+                          className={`p-3 rounded text-sm ${
+                            testResult.success
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200'
+                              : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200'
+                          }`}
+                        >
+                          {testResult.message}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
