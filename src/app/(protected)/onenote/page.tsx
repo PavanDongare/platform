@@ -19,7 +19,7 @@ export default function OneNotePage() {
   }, [tenantId, userId, setContext, initialize])
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
+    <div className="h-full flex flex-col overflow-hidden">
       <BreadcrumbNav />
       <SectionsTabs />
 
