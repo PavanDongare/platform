@@ -121,7 +121,7 @@ export const RelationshipEdge = memo(({
               transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
               pointerEvents: 'all',
             }}
-            className="nodrag nopan bg-card px-2 py-1 rounded border border-border text-xs shadow-sm"
+            className="nodrag nopan bg-card px-2 py-1 rounded border border-border text-xs"
           >
             <div className="flex items-center gap-1.5">
               <span

@@ -115,7 +115,7 @@ export default function DMSPage() {
     >
       {isDragging && (
         <div className="absolute inset-0 z-50 bg-primary/20 backdrop-blur-sm flex items-center justify-center pointer-events-none">
-          <div className="bg-background rounded-xl shadow-2xl p-8 flex flex-col items-center gap-4">
+          <div className="bg-background rounded-md border p-8 flex flex-col items-center gap-4">
             <Upload className="h-16 w-16 text-primary" />
             <p className="text-xl font-semibold">Drop files to upload</p>
             <p className="text-sm text-muted-foreground">PDF, JPG, PNG, GIF, WebP</p>

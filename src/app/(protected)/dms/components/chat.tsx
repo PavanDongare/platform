@@ -71,15 +71,15 @@ export function Chat({ onActionComplete }: { onActionComplete?: () => void } = {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 bg-primary text-primary-foreground rounded-full p-4 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110 z-50"
+          className="fixed bottom-6 right-6 bg-primary text-primary-foreground rounded-full p-4 transition-all duration-200 hover:scale-110 z-50"
         >
           <MessageCircle className="w-6 h-6" />
         </button>
       )}
 
       {isOpen && (
-        <div className="fixed bottom-6 right-6 w-96 h-[600px] bg-background rounded-2xl shadow-2xl flex flex-col z-50 border">
-          <div className="bg-primary text-primary-foreground p-4 rounded-t-2xl flex items-center justify-between">
+        <div className="fixed bottom-6 right-6 w-96 h-[600px] bg-background rounded-md flex flex-col z-50 border">
+          <div className="bg-primary text-primary-foreground p-4 rounded-t-md flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5" />
               <h3 className="font-semibold">Documents Assistant</h3>

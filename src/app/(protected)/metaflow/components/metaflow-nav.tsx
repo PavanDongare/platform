@@ -16,8 +16,8 @@ export function MetaflowNav() {
   const pathname = usePathname();
 
   return (
-    <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <nav className="flex gap-1 px-4 py-2">
+    <div className="border-b bg-background">
+      <nav className="flex gap-0 px-4">
         {navItems.map((item) => {
           const isActive = pathname?.startsWith(item.href);
           return (
@@ -25,10 +25,10 @@ export function MetaflowNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                'px-4 py-2 text-sm font-medium rounded-md transition-colors',
+                'px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors',
                 isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                  ? 'border-primary text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
               )}
             >
               {item.label}

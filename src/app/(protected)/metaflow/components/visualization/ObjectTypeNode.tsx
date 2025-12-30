@@ -25,7 +25,7 @@ export const ObjectTypeNode = memo(({ data, selected }: Props) => {
   return (
     <div
       className={cn(
-        'rounded-lg border bg-card shadow-sm transition-shadow hover:shadow-md',
+        'rounded-md border bg-card',
         selected ? 'border-blue-500 border-2' : 'border-border',
         isJunction ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800' : ''
       )}
