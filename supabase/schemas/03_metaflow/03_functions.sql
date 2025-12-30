@@ -188,6 +188,10 @@ DECLARE
   v_rules JSONB;
   v_rule JSONB;
   v_result JSONB := '{}'::JSONB;
+  v_data JSONB;
+  v_prop_key TEXT;
+  v_prop_config JSONB;
+  v_object_id UUID;
 BEGIN
   -- Validate parameters
   v_validation := metaflow.validate_action_parameters(p_action_type_id, p_tenant_id, p_parameters);
@@ -202,27 +206,69 @@ BEGIN
 
   v_rules := v_config->'rules';
 
-  -- Execute each rule (simplified - expand as needed)
+  -- Execute each rule
   FOR v_rule IN SELECT * FROM jsonb_array_elements(v_rules)
   LOOP
     CASE v_rule->>'type'
       WHEN 'modify_object' THEN
+        -- Build data from properties config
+        v_data := '{}'::JSONB;
+        IF v_rule->'properties' IS NOT NULL THEN
+          FOR v_prop_key, v_prop_config IN SELECT * FROM jsonb_each(v_rule->'properties')
+          LOOP
+            CASE v_prop_config->>'source'
+              WHEN 'static' THEN
+                v_data := v_data || jsonb_build_object(v_prop_key, v_prop_config->'value');
+              WHEN 'parameter' THEN
+                v_data := v_data || jsonb_build_object(v_prop_key, p_parameters->(v_prop_config->>'parameterName'));
+              WHEN 'current_user' THEN
+                v_data := v_data || jsonb_build_object(v_prop_key, p_current_user);
+              WHEN 'current_timestamp' THEN
+                v_data := v_data || jsonb_build_object(v_prop_key, to_jsonb(NOW()));
+              ELSE
+                NULL;
+            END CASE;
+          END LOOP;
+        END IF;
+
         -- Update object data
         UPDATE metaflow.objects
-        SET data = data || (v_rule->'modifications')
+        SET data = data || v_data,
+            updated_at = NOW()
         WHERE id = (p_parameters->>(v_rule->>'objectParameter'))::UUID
           AND tenant_id = p_tenant_id;
         v_result := v_result || jsonb_build_object('modified', true);
 
       WHEN 'create_object' THEN
+        -- Build data from properties config
+        v_data := '{}'::JSONB;
+        IF v_rule->'properties' IS NOT NULL THEN
+          FOR v_prop_key, v_prop_config IN SELECT * FROM jsonb_each(v_rule->'properties')
+          LOOP
+            CASE v_prop_config->>'source'
+              WHEN 'static' THEN
+                v_data := v_data || jsonb_build_object(v_prop_key, v_prop_config->'value');
+              WHEN 'parameter' THEN
+                v_data := v_data || jsonb_build_object(v_prop_key, p_parameters->(v_prop_config->>'parameterName'));
+              WHEN 'current_user' THEN
+                v_data := v_data || jsonb_build_object(v_prop_key, p_current_user);
+              WHEN 'current_timestamp' THEN
+                v_data := v_data || jsonb_build_object(v_prop_key, to_jsonb(NOW()));
+              ELSE
+                NULL;
+            END CASE;
+          END LOOP;
+        END IF;
+
         -- Create new object
         INSERT INTO metaflow.objects (tenant_id, object_type_id, data)
         VALUES (
           p_tenant_id,
           (v_rule->>'objectTypeId')::UUID,
-          COALESCE(v_rule->'initialData', '{}'::JSONB)
-        );
-        v_result := v_result || jsonb_build_object('created', true);
+          v_data
+        )
+        RETURNING id INTO v_object_id;
+        v_result := v_result || jsonb_build_object('created', true, 'objectId', v_object_id);
 
       WHEN 'delete_object' THEN
         -- Delete object

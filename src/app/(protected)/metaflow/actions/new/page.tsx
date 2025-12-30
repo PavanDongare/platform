@@ -15,12 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useTenant } from '@/lib/auth/tenant-context';
 import { useObjectTypes } from '../../lib/hooks/use-ontology';
 import { createActionType } from '../../lib/hooks/use-actions';
 import type { ActionParameter, ActionRule, PropertyValueConfig } from '../../lib/types/actions';
 
 export default function NewActionPage() {
   const router = useRouter();
+  const { tenantId } = useTenant();
   const { objectTypes } = useObjectTypes();
 
   const [displayName, setDisplayName] = useState('');
@@ -140,11 +142,6 @@ export default function NewActionPage() {
       return;
     }
 
-    if (parameters.length === 0) {
-      setError('At least one parameter is required');
-      return;
-    }
-
     if (executionType === 'declarative' && rules.length === 0) {
       setError('At least one rule is required for declarative actions');
       return;
@@ -171,7 +168,7 @@ export default function NewActionPage() {
         config.functionName = functionName;
       }
 
-      const created = await createActionType({
+      const created = await createActionType(tenantId, {
         displayName,
         config,
       });
@@ -286,7 +283,7 @@ export default function NewActionPage() {
         <CardContent>
           {parameters.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4 border border-dashed rounded">
-              No parameters yet. Add at least one parameter.
+              No parameters yet
             </p>
           ) : (
             <div className="space-y-4">
@@ -317,7 +314,7 @@ export default function NewActionPage() {
                     <div className="space-y-1">
                       <Label className="text-xs">Display Name *</Label>
                       <Input
-                        value={param.displayName}
+                        value={param.displayName || ''}
                         onChange={(e) => updateParameter(index, { displayName: e.target.value })}
                         placeholder="Parameter Name"
                         className="h-8 text-sm"
@@ -355,9 +352,9 @@ export default function NewActionPage() {
                             <SelectValue placeholder="Select type..." />
                           </SelectTrigger>
                           <SelectContent>
-                            {objectTypes.map((type) => (
+                            {objectTypes.filter((type) => type).map((type) => (
                               <SelectItem key={type.id} value={type.id}>
-                                {type.displayName}
+                                {type.displayName || type.id}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -448,9 +445,9 @@ export default function NewActionPage() {
                               <SelectValue placeholder="Select object type..." />
                             </SelectTrigger>
                             <SelectContent>
-                              {objectTypes.map((type) => (
+                              {objectTypes.filter((type) => type).map((type) => (
                                 <SelectItem key={type.id} value={type.id}>
-                                  {type.displayName}
+                                  {type.displayName || type.id}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -485,10 +482,10 @@ export default function NewActionPage() {
                             </SelectTrigger>
                             <SelectContent>
                               {parameters
-                                .filter((p) => p.type === 'object-reference')
+                                .filter((p) => p && p.type === 'object-reference')
                                 .map((p) => (
                                   <SelectItem key={p.name} value={p.name}>
-                                    {p.displayName}
+                                    {p.displayName || p.name}
                                   </SelectItem>
                                 ))}
                             </SelectContent>
@@ -522,10 +519,10 @@ export default function NewActionPage() {
                           </SelectTrigger>
                           <SelectContent>
                             {parameters
-                              .filter((p) => p.type === 'object-reference')
+                              .filter((p) => p && p.type === 'object-reference')
                               .map((p) => (
                                 <SelectItem key={p.name} value={p.name}>
-                                  {p.displayName}
+                                  {p.displayName || p.name}
                                 </SelectItem>
                               ))}
                           </SelectContent>
@@ -565,12 +562,12 @@ function PropertyBuilder({
 
   if (!objectType) return null;
 
-  const availableProps = Object.entries(objectType.config.properties || {})
-    .filter(([key]) => !Object.keys(rule.properties || {}).includes(key))
+  const availableProps = Object.entries(objectType.config?.properties || {})
+    .filter(([key, prop]) => prop && !Object.keys(rule.properties || {}).includes(key))
     .map(([key, prop]: [string, any]) => ({
       key,
-      displayName: prop.displayName,
-      type: prop.type,
+      displayName: prop?.displayName || key,
+      type: prop?.type || 'string',
     }));
 
   const handleAdd = () => {
@@ -592,7 +589,7 @@ function PropertyBuilder({
             <SelectContent>
               {availableProps.map((prop) => (
                 <SelectItem key={prop.key} value={prop.key}>
-                  {prop.displayName}
+                  {prop.displayName || prop.key}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -675,9 +672,9 @@ function PropertyBuilder({
                       <SelectValue placeholder="Select..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {parameters.map((p) => (
+                      {parameters.filter((p) => p).map((p) => (
                         <SelectItem key={p.name} value={p.name}>
-                          {p.displayName}
+                          {p.displayName || p.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
