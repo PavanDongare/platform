@@ -154,3 +154,28 @@ export async function executeAction(
 
   return { success: true, result: result.result };
 }
+
+// Get available actions for a specific object
+export async function getAvailableActionsForObject(
+  objectId: string,
+  tenantId: string
+): Promise<ActionListItem[]> {
+  const supabase = getSupabase('metaflow');
+  const { data, error } = await supabase.rpc('get_available_actions_for_object', {
+    p_object_id: objectId,
+    p_tenant_id: tenantId,
+  });
+
+  if (error) throw error;
+
+  return (data || []).map((row: Record<string, unknown>) => ({
+    id: row.id as string,
+    displayName: row.display_name as string,
+    executionType: row.execution_type as 'declarative' | 'function-backed',
+    parameters: row.parameters as ActionTypeConfig['parameters'],
+    description: row.description as string | undefined,
+    classification: row.classification as string,
+    criteriaPassed: row.criteria_passed as boolean,
+    failureReason: row.failure_reason as string | undefined,
+  }));
+}

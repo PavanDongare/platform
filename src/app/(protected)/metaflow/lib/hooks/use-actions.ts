@@ -13,6 +13,7 @@ import {
   deleteActionType as deleteActionTypeFn,
   listActions,
   executeAction as executeActionFn,
+  getAvailableActionsForObject,
 } from '../queries/actions';
 
 export function useActionTypes() {
@@ -90,6 +91,39 @@ export function useActionList() {
       setLoading(false);
     }
   }, [tenantId]);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  return { actions, loading, error, refetch };
+}
+
+// Hook for getting available actions for a specific object
+export function useAvailableActionsForObject(objectId: string | null) {
+  const { tenantId } = useTenant();
+  const [actions, setActions] = useState<ActionListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const refetch = useCallback(async () => {
+    if (!objectId) {
+      setActions([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getAvailableActionsForObject(objectId, tenantId);
+      setActions(data);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  }, [objectId, tenantId]);
 
   useEffect(() => {
     refetch();

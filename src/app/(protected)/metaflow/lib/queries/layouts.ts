@@ -160,3 +160,23 @@ export async function deleteProcessLayout(processName: string, tenantId: string)
 
   if (error) throw error;
 }
+
+// Get process layout for a specific object type
+export async function getProcessLayoutForObjectType(
+  objectTypeId: string,
+  tenantId: string
+): Promise<ProcessLayout | null> {
+  const supabase = getSupabase('metaflow');
+  const { data, error } = await supabase
+    .from('process_layouts')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .contains('object_type_ids', [objectTypeId])
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') return null;
+    throw error;
+  }
+  return mapProcessLayout(data);
+}

@@ -295,3 +295,89 @@ BEGIN
   ORDER BY ot.display_name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ============================================================================
+-- Get Available Actions for Object
+-- Returns actions applicable to a specific object with classification
+-- ============================================================================
+CREATE OR REPLACE FUNCTION metaflow.get_available_actions_for_object(
+  p_object_id UUID,
+  p_tenant_id UUID
+)
+RETURNS TABLE(
+  id UUID,
+  display_name TEXT,
+  execution_type TEXT,
+  parameters JSONB,
+  description TEXT,
+  classification TEXT,
+  criteria_passed BOOLEAN,
+  failure_reason TEXT
+) AS $$
+DECLARE
+  v_object_type_id UUID;
+  v_object_data JSONB;
+BEGIN
+  -- Get the object and its type
+  SELECT o.object_type_id, o.data INTO v_object_type_id, v_object_data
+  FROM metaflow.objects o
+  WHERE o.id = p_object_id AND o.tenant_id = p_tenant_id;
+
+  IF v_object_type_id IS NULL THEN
+    RETURN;
+  END IF;
+
+  -- Return all actions with classification
+  RETURN QUERY
+  SELECT
+    a.id,
+    a.display_name,
+    a.config->>'executionType' AS execution_type,
+    a.config->'parameters' AS parameters,
+    COALESCE(a.config->>'description', '') AS description,
+    -- Classification logic:
+    -- 'recommended' if action modifies a picklist property (state transition)
+    -- 'independent' if no submission criteria
+    -- 'other' otherwise
+    CASE
+      WHEN EXISTS (
+        SELECT 1 FROM jsonb_array_elements(a.config->'rules') AS rule
+        WHERE rule->>'type' = 'modify_object'
+          AND EXISTS (
+            SELECT 1 FROM jsonb_each(rule->'properties') AS prop
+            WHERE (
+              SELECT ot.config->'properties'->prop.key->'picklistConfig' IS NOT NULL
+              FROM metaflow.object_types ot
+              WHERE ot.id = v_object_type_id
+            )
+          )
+      ) THEN 'recommended'
+      WHEN a.config->'submissionCriteria' IS NULL
+           OR jsonb_array_length(COALESCE(a.config->'submissionCriteria', '[]'::JSONB)) = 0
+      THEN 'independent'
+      ELSE 'other'
+    END AS classification,
+    -- For now, assume criteria passed (simplified)
+    TRUE AS criteria_passed,
+    NULL::TEXT AS failure_reason
+  FROM metaflow.action_types a
+  WHERE a.tenant_id = p_tenant_id
+    -- Filter to actions that have a parameter matching this object type
+    AND EXISTS (
+      SELECT 1 FROM jsonb_array_elements(a.config->'parameters') AS param
+      WHERE param->>'objectTypeId' = v_object_type_id::TEXT
+         OR param->>'type' = 'object-reference'
+    )
+  ORDER BY
+    CASE
+      WHEN EXISTS (
+        SELECT 1 FROM jsonb_array_elements(a.config->'rules') AS rule
+        WHERE rule->>'type' = 'modify_object'
+      ) THEN 1
+      ELSE 2
+    END,
+    a.display_name;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+COMMENT ON FUNCTION metaflow.get_available_actions_for_object IS 'Returns available actions for a specific object with classification';

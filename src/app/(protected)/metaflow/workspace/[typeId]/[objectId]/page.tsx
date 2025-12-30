@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Save, Trash2, Loader2 } from 'lucide-react';
@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTenant } from '@/lib/auth/tenant-context';
 import { ForeignKeySelect } from '../../../components/ontology/ForeignKeySelect';
+import { SmartActionDropdown } from '../../../components/workspace/SmartActionDropdown';
+import { StatusBreadcrumb } from '../../../components/workspace/StatusBreadcrumb';
 import { getObjectType } from '../../../lib/queries/object-types';
 import { getObject, updateObject, deleteObject } from '../../../lib/queries/objects';
 import type { ObjectType, ObjectInstance } from '../../../lib/types/ontology';
@@ -28,24 +30,26 @@ export default function ObjectDetailPage() {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const [typeData, objectData] = await Promise.all([
-          getObjectType(typeId, tenantId),
-          getObject(objectId, tenantId),
-        ]);
-        setObjectType(typeData);
-        setObject(objectData);
-        setFormData(objectData?.data || {});
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [typeData, objectData] = await Promise.all([
+        getObjectType(typeId, tenantId),
+        getObject(objectId, tenantId),
+      ]);
+      setObjectType(typeData);
+      setObject(objectData);
+      setFormData(objectData?.data || {});
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }, [typeId, objectId, tenantId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleSave = async () => {
     if (!object) return;
@@ -133,6 +137,24 @@ export default function ObjectDetailPage() {
           </Button>
         </div>
       </div>
+
+      {/* Status Breadcrumb */}
+      <StatusBreadcrumb objectTypeId={typeId} objectData={object.data} />
+
+      {/* Actions */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <SmartActionDropdown
+            objectId={objectId}
+            objectTypeId={typeId}
+            currentObject={object}
+            onActionExecuted={loadData}
+          />
+        </CardContent>
+      </Card>
 
       {/* Error */}
       {error && (
