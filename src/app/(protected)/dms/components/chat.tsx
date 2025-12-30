@@ -78,7 +78,7 @@ export function Chat({ onActionComplete }: { onActionComplete?: () => void } = {
       )}
 
       {isOpen && (
-        <div className="fixed bottom-6 right-6 w-96 h-[600px] bg-background rounded-md flex flex-col z-50 border">
+        <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:w-96 h-[70vh] md:h-[600px] bg-background rounded-md flex flex-col z-50 border">
           <div className="bg-primary text-primary-foreground p-4 rounded-t-md flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5" />

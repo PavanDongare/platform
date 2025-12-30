@@ -4,7 +4,7 @@
 
 import { useEffect, useState, useCallback, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { Node, Edge, Connection } from 'reactflow';
+import { Node, Edge, Connection, MarkerType } from 'reactflow';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useProcessLayout } from '../../lib/hooks/use-process';
@@ -20,6 +20,7 @@ import TransitionActionModal from '../../components/process/TransitionActionModa
 import { createActionType } from '../../lib/hooks/use-actions';
 import { useTenant } from '@/lib/auth/tenant-context';
 import type { StateNodeData } from '../../lib/process/stateNodeGenerator';
+import { DesktopRecommended } from '@/components/desktop-recommended';
 
 export default function ProcessCanvasPage({
   params,
@@ -140,7 +141,7 @@ export default function ProcessCanvasPage({
                 hasExtras: false,
               },
               markerEnd: {
-                type: 'arrowclosed' as const,
+                type: MarkerType.ArrowClosed,
                 width: 24,
                 height: 24,
                 color: '#000000',
@@ -185,7 +186,7 @@ export default function ProcessCanvasPage({
                   hasExtras: false,
                 },
                 markerEnd: {
-                  type: 'arrowclosed' as const,
+                  type: MarkerType.ArrowClosed,
                   width: 24,
                   height: 24,
                   color: '#000000',
@@ -357,66 +358,68 @@ export default function ProcessCanvasPage({
   );
 
   return (
-    <div className="flex h-full">
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="border-b bg-card px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push('/metaflow/processes')}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-            <div>
-              <h1 className="text-xl font-semibold text-foreground">
-                {layout.processName}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {layout.objectTypeIds.length} object type
-                {layout.objectTypeIds.length !== 1 ? 's' : ''}
-              </p>
+    <DesktopRecommended featureName="Process Canvas">
+      <div className="flex h-full">
+        {/* Main content area */}
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <div className="border-b bg-card px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push('/metaflow/processes')}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back
+              </Button>
+              <div>
+                <h1 className="text-xl font-semibold text-foreground">
+                  {layout.processName}
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  {layout.objectTypeIds.length} object type
+                  {layout.objectTypeIds.length !== 1 ? 's' : ''}
+                </p>
+              </div>
             </div>
+            <Button variant="default" size="sm" onClick={handleSaveLayout}>
+              <Save className="w-4 h-4 mr-2" />
+              Save Layout
+            </Button>
           </div>
-          <Button variant="default" size="sm" onClick={handleSaveLayout}>
-            <Save className="w-4 h-4 mr-2" />
-            Save Layout
-          </Button>
+
+          {/* Canvas */}
+          <div className="flex-1">
+            {isInitialized && (
+              <ProcessCanvas
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={handleNodesChange}
+                onEdgesChange={handleEdgesChange}
+                onConnect={handleConnect}
+              />
+            )}
+          </div>
         </div>
 
-        {/* Canvas */}
-        <div className="flex-1">
-          {isInitialized && (
-            <ProcessCanvas
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={handleNodesChange}
-              onEdgesChange={handleEdgesChange}
-              onConnect={handleConnect}
-            />
-          )}
-        </div>
+        {/* Picklist Manager Sidebar */}
+        <PicklistManager
+          objectTypes={processObjectTypes}
+          trackedPicklists={layout.trackedPicklists || []}
+          onAddPicklist={addTrackedPicklist}
+          onRemovePicklist={removeTrackedPicklist}
+        />
+
+        {/* Transition Action Modal */}
+        <TransitionActionModal
+          open={transitionModalOpen}
+          onOpenChange={setTransitionModalOpen}
+          sourceState={pendingTransition?.sourceState ?? null}
+          targetState={pendingTransition?.targetState ?? null}
+          onConfirm={handleCreateTransitionAction}
+        />
       </div>
-
-      {/* Picklist Manager Sidebar */}
-      <PicklistManager
-        objectTypes={processObjectTypes}
-        trackedPicklists={layout.trackedPicklists || []}
-        onAddPicklist={addTrackedPicklist}
-        onRemovePicklist={removeTrackedPicklist}
-      />
-
-      {/* Transition Action Modal */}
-      <TransitionActionModal
-        open={transitionModalOpen}
-        onOpenChange={setTransitionModalOpen}
-        sourceState={pendingTransition?.sourceState ?? null}
-        targetState={pendingTransition?.targetState ?? null}
-        onConfirm={handleCreateTransitionAction}
-      />
-    </div>
+    </DesktopRecommended>
   );
 }

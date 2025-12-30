@@ -11,6 +11,7 @@ interface Props {
   onChange: (value: string) => void;
   required?: boolean;
   displayName?: string;
+  disabled?: boolean;
 }
 
 interface FKOption {
@@ -18,7 +19,7 @@ interface FKOption {
   label: string;
 }
 
-export function ForeignKeySelect({ targetTypeId, value, onChange, required, displayName }: Props) {
+export function ForeignKeySelect({ targetTypeId, value, onChange, required, displayName, disabled }: Props) {
   const { tenantId } = useTenant();
   const [options, setOptions] = useState<FKOption[]>([]);
   const [loading, setLoading] = useState(true);
@@ -121,8 +122,9 @@ export function ForeignKeySelect({ targetTypeId, value, onChange, required, disp
     <select
       value={value || ''}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full h-8 border rounded px-2 text-sm bg-background"
+      className="w-full h-8 border rounded px-2 text-sm bg-background disabled:opacity-50 disabled:cursor-not-allowed"
       required={required}
+      disabled={disabled}
     >
       <option value="">Select {displayName || 'option'}...</option>
       {options.map((opt) => (

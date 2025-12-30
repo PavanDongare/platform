@@ -3,6 +3,7 @@
 import { Loader2 } from 'lucide-react';
 import { useObjectTypes, useRelationships } from '../../lib/hooks';
 import { OntologyVisualization } from '../../components/visualization/OntologyVisualization';
+import { DesktopRecommended } from '@/components/desktop-recommended';
 
 export default function VisualizationPage() {
   const { objectTypes, loading: typesLoading, error: typesError } = useObjectTypes();
@@ -31,11 +32,13 @@ export default function VisualizationPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-120px)]">
-      <OntologyVisualization
-        objectTypes={objectTypes}
-        relationships={relationships}
-      />
-    </div>
+    <DesktopRecommended featureName="Ontology Visualization">
+      <div className="h-[calc(100vh-120px)]">
+        <OntologyVisualization
+          objectTypes={objectTypes}
+          relationships={relationships}
+        />
+      </div>
+    </DesktopRecommended>
   );
 }
