@@ -13,7 +13,7 @@ import {
   LogOut,
   LogIn,
   User,
-  Home,
+  Briefcase,
   Menu,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -21,7 +21,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 
 const apps = [
-  { name: 'Home', href: '/', icon: Home },
+  { name: 'Portfolio', href: '/', icon: Briefcase },
   { name: 'Documents', href: '/dms', icon: FileText },
   { name: 'Notes', href: '/onenote', icon: StickyNote },
   { name: 'Metaflow', href: '/metaflow', icon: GitBranch },

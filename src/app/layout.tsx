@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { createClient } from "@/lib/supabase/server";
-import { AppSidebar } from "@/components/app-sidebar";
+import { LayoutWrapper } from "@/components/layout-wrapper";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -45,12 +45,9 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="flex h-screen overflow-hidden">
-          <AppSidebar email={user?.email} />
-          <main className="flex-1 overflow-auto pt-14 md:pt-0">
-            {children}
-          </main>
-        </div>
+        <LayoutWrapper email={user?.email}>
+          {children}
+        </LayoutWrapper>
       </body>
     </html>
   );
