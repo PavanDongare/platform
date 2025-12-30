@@ -14,6 +14,7 @@ import {
   LogIn,
   User,
   Briefcase,
+  LayoutGrid,
   Menu,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -22,6 +23,7 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 
 const apps = [
   { name: 'Portfolio', href: '/', icon: Briefcase },
+  { name: 'Apps', href: '/apps', icon: LayoutGrid },
   { name: 'Documents', href: '/dms', icon: FileText },
   { name: 'Notes', href: '/onenote', icon: StickyNote },
   { name: 'Metaflow', href: '/metaflow', icon: GitBranch },
