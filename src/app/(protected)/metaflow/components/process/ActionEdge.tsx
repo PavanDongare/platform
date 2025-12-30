@@ -38,8 +38,8 @@ function ActionEdge({
         path={edgePath}
         markerEnd={markerEnd}
         style={{
-          strokeWidth: 2,
-          stroke: 'hsl(var(--muted-foreground))',
+          strokeWidth: 3,
+          stroke: '#000000',
         }}
       />
       {actionName && (

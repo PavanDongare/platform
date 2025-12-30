@@ -12,9 +12,14 @@ import { useObjectTypes } from '../../lib/hooks/use-ontology';
 import { useActionTypes } from '../../lib/hooks/use-actions';
 import ProcessCanvas from '../../components/process/ProcessCanvas';
 import PicklistManager from '../../components/process/PicklistManager';
-import { generateStateNodes } from '../../lib/process/stateNodeGenerator';
+import { generateStateNodes, isStateNode } from '../../lib/process/stateNodeGenerator';
 import { classifyAction } from '../../lib/process/actionClassifier';
 import { applyLayout, calculateLayout } from '../../lib/process/layoutCalculator';
+import { validateTransition } from '../../lib/process/transitionActionGenerator';
+import TransitionActionModal from '../../components/process/TransitionActionModal';
+import { createActionType } from '../../lib/hooks/use-actions';
+import { useTenant } from '@/lib/auth/tenant-context';
+import type { StateNodeData } from '../../lib/process/stateNodeGenerator';
 
 export default function ProcessCanvasPage({
   params,
@@ -33,10 +38,18 @@ export default function ProcessCanvasPage({
   } = useProcessLayout(processId);
   const { objectTypes, loading: ontologyLoading } = useObjectTypes();
   const { actionTypes, loading: actionsLoading, refetch: refetchActions } = useActionTypes();
+  const { tenantId } = useTenant();
 
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
+
+  // Transition action modal state
+  const [transitionModalOpen, setTransitionModalOpen] = useState(false);
+  const [pendingTransition, setPendingTransition] = useState<{
+    sourceState: StateNodeData;
+    targetState: StateNodeData;
+  } | null>(null);
 
   // Load and build graph
   useEffect(() => {
@@ -128,9 +141,9 @@ export default function ProcessCanvasPage({
               },
               markerEnd: {
                 type: 'arrowclosed' as const,
-                width: 20,
-                height: 20,
-                color: 'hsl(var(--muted-foreground))',
+                width: 24,
+                height: 24,
+                color: '#000000',
               },
             });
           } else if (hasPartialTransition) {
@@ -173,9 +186,9 @@ export default function ProcessCanvasPage({
                 },
                 markerEnd: {
                   type: 'arrowclosed' as const,
-                  width: 20,
-                  height: 20,
-                  color: 'hsl(var(--muted-foreground))',
+                  width: 24,
+                  height: 24,
+                  color: '#000000',
                 },
               });
             }
@@ -275,10 +288,49 @@ export default function ProcessCanvasPage({
     setEdges(updatedEdges);
   }, []);
 
-  // Handle new connection
-  const handleConnect = useCallback((connection: Connection) => {
-    console.log('New connection:', connection);
-  }, []);
+  // Handle new connection - intercept state-to-state for auto action creation
+  const handleConnect = useCallback(
+    (connection: Connection) => {
+      const { source, target } = connection;
+      if (!source || !target) return;
+
+      // Check if both source and target are state nodes
+      if (!isStateNode(source) || !isStateNode(target)) {
+        return; // Not a state-to-state connection
+      }
+
+      // Get state data from nodes
+      const sourceNode = nodes.find((n) => n.id === source);
+      const targetNode = nodes.find((n) => n.id === target);
+
+      if (!sourceNode || !targetNode) return;
+
+      const sourceData = sourceNode.data as StateNodeData;
+      const targetData = targetNode.data as StateNodeData;
+
+      // Validate the transition
+      const validation = validateTransition(sourceData, targetData);
+      if (!validation.valid) {
+        alert(`Invalid Transition: ${validation.error}`);
+        return;
+      }
+
+      // Open modal for confirmation
+      setPendingTransition({ sourceState: sourceData, targetState: targetData });
+      setTransitionModalOpen(true);
+    },
+    [nodes]
+  );
+
+  // Handle action creation from transition modal
+  const handleCreateTransitionAction = useCallback(
+    async (displayName: string, config: any) => {
+      await createActionType(tenantId, { displayName, config });
+      // Refetch actions to update the graph
+      await refetchActions();
+    },
+    [tenantId, refetchActions]
+  );
 
   if (layoutLoading || ontologyLoading || actionsLoading) {
     return (
@@ -355,6 +407,15 @@ export default function ProcessCanvasPage({
         trackedPicklists={layout.trackedPicklists || []}
         onAddPicklist={addTrackedPicklist}
         onRemovePicklist={removeTrackedPicklist}
+      />
+
+      {/* Transition Action Modal */}
+      <TransitionActionModal
+        open={transitionModalOpen}
+        onOpenChange={setTransitionModalOpen}
+        sourceState={pendingTransition?.sourceState ?? null}
+        targetState={pendingTransition?.targetState ?? null}
+        onConfirm={handleCreateTransitionAction}
       />
     </div>
   );
