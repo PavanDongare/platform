@@ -15,7 +15,9 @@ import {
 } from '@dnd-kit/sortable'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { ChevronsUpDown } from 'lucide-react'
 import { useNotesStore } from '../lib/notes-store'
+import { usePanelStore } from '../lib/panel-store'
 import { updateSection } from '../lib/queries/sections'
 import { SortableSectionTab } from './sortable-section-tab'
 
@@ -30,6 +32,7 @@ export function SectionsTabs() {
     isLoadingSections,
     reorderSections
   } = useNotesStore()
+  const { toggleSections } = usePanelStore()
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
@@ -137,6 +140,16 @@ export function SectionsTabs() {
           </Button>
         </div>
       </ScrollArea>
+
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 mr-2 text-muted-foreground hover:text-foreground"
+        onClick={toggleSections}
+        title="Hide sections"
+      >
+        <ChevronsUpDown className="h-4 w-4" />
+      </Button>
     </div>
   )
 }

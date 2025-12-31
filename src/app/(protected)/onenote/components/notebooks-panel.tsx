@@ -15,6 +15,8 @@ import {
 } from '@dnd-kit/sortable'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { PanelLeftClose } from 'lucide-react'
+import { usePanelStore } from '../lib/panel-store'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +42,7 @@ export function NotebooksPanel() {
     isLoadingNotebooks,
     reorderNotebooks
   } = useNotesStore()
+  const { toggleNotebooks } = usePanelStore()
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
@@ -119,10 +122,19 @@ export function NotebooksPanel() {
 
   return (
     <div className="flex flex-col h-full border-r bg-muted/10">
-      <div className="p-4 border-b">
+      <div className="p-4 border-b flex items-center justify-between">
         <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
           Notebooks
         </h2>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 text-muted-foreground hover:text-foreground"
+          onClick={toggleNotebooks}
+          title="Hide notebooks (Cmd+\)"
+        >
+          <PanelLeftClose className="h-4 w-4" />
+        </Button>
       </div>
 
       <ScrollArea className="flex-1">

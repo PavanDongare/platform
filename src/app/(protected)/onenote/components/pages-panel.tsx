@@ -15,7 +15,9 @@ import {
 } from '@dnd-kit/sortable'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { PanelRightClose } from 'lucide-react'
 import { useNotesStore } from '../lib/notes-store'
+import { usePanelStore } from '../lib/panel-store'
 import { SortablePageItem } from './sortable-page-item'
 
 export function PagesPanel() {
@@ -29,6 +31,7 @@ export function PagesPanel() {
     updatePageTitle,
     reorderPages
   } = useNotesStore()
+  const { togglePages } = usePanelStore()
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
@@ -84,10 +87,23 @@ export function PagesPanel() {
     }
   }
 
+  const headerButton = (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-6 w-6 text-muted-foreground hover:text-foreground"
+      onClick={togglePages}
+      title="Hide pages (Cmd+\)"
+    >
+      <PanelRightClose className="h-4 w-4" />
+    </Button>
+  )
+
   if (!currentSectionId) {
     return (
       <div className="flex flex-col h-full border-l bg-muted/10">
-        <div className="p-4 border-b">
+        <div className="p-4 border-b flex items-center justify-between">
+          {headerButton}
           <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Pages</h2>
         </div>
         <div className="flex-1 flex items-center justify-center">
@@ -102,7 +118,8 @@ export function PagesPanel() {
 
   return (
     <div className="flex flex-col h-full border-l bg-muted/10">
-      <div className="p-4 border-b">
+      <div className="p-4 border-b flex items-center justify-between">
+        {headerButton}
         <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Pages</h2>
       </div>
 
