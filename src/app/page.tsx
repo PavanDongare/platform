@@ -18,48 +18,79 @@ export default function PortfolioPage() {
             I build systems that turn messy business processes into clean, working software.
           </p>
 
-          {/* ASCII Architecture Diagram */}
-          <div className="font-mono text-[10px] md:text-xs text-zinc-500 overflow-x-auto pb-4">
-            <pre className="leading-snug">{`
-╔═══════════════════════════════════════════════════════════════════════════════════════╗
-║                              PLATFORM ARCHITECTURE                                     ║
-║  ─────────────────────────────────────────────────────────────────────────────────    ║
-║  Shared: Auth • Multi-tenant • Supabase • TypeScript • Tailwind                       ║
-╠═══════════════════════════════════════════════════════════════════════════════════════╣
-║                                                                                        ║
-║  ┌─────────────────────────┐ ┌─────────────────────────┐ ┌─────────────────────────┐  ║
-║  │       METAFLOW          │ │          DMS            │ │        ONENOTE          │  ║
-║  │  ───────────────────    │ │  ───────────────────    │ │  ───────────────────    │  ║
-║  │                         │ │                         │ │                         │  ║
-║  │  ObjectTypes ──┐        │ │  Upload ──┐             │ │  Notebooks              │  ║
-║  │  Fields        │        │ │  (PDF,    │             │ │    └─► Sections         │  ║
-║  │  Relations     ▼        │ │   IMG)    ▼             │ │          └─► Pages      │  ║
-║  │           ┌────────┐    │ │      ┌─────────┐        │ │               │         │  ║
-║  │  Actions ─┤ Engine │    │ │      │ Claude  │        │ │               ▼         │  ║
-║  │  (JSON)   │ 1300   │    │ │      │ Haiku   │        │ │         ┌─────────┐     │  ║
-║  │  Criteria │ LOC    │    │ │      │ Extract │        │ │         │ TLDraw  │     │  ║
-║  │           └────────┘    │ │      └────┬────┘        │ │         │ Canvas  │     │  ║
-║  │               │         │ │           │             │ │         └─────────┘     │  ║
-║  │               ▼         │ │           ▼             │ │               │         │  ║
-║  │  ┌───────────────────┐  │ │  ┌───────────────────┐  │ │               ▼         │  ║
-║  │  │ Process Canvas    │  │ │  │ Chat + Tools      │  │ │  ┌───────────────────┐  │  ║
-║  │  │ (ReactFlow)       │  │ │  │ (Claude Sonnet)   │  │ │  │ Zustand Store     │  ║
-║  │  │ State Machines    │  │ │  │ Search/Move/Del   │  │ │  │ Drag & Drop       │  │  ║
-║  │  └───────────────────┘  │ │  └───────────────────┘  │ │  └───────────────────┘  │  ║
-║  │                         │ │                         │ │                         │  ║
-║  │  Schema: metaflow.*     │ │  Schema: dms.*          │ │  Schema: onenote.*      │  ║
-║  └─────────────────────────┘ └─────────────────────────┘ └─────────────────────────┘  ║
-║                                        │                                              ║
-║                                        ▼                                              ║
-║  ┌────────────────────────────────────────────────────────────────────────────────┐  ║
-║  │                              POSTGRESQL                                         │  ║
-║  │  ────────────────────────────────────────────────────────────────────────────  │  ║
-║  │  4 schemas: public │ metaflow │ dms │ onenote                                   │  ║
-║  │  RLS policies per tenant  •  PL/pgSQL functions  •  JSONB storage              │  ║
-║  └────────────────────────────────────────────────────────────────────────────────┘  ║
-║                                                                                        ║
-║  + New App?  Create schema  ──►  Add routes  ──►  Build UI  ──►  Done                 ║
-╚═══════════════════════════════════════════════════════════════════════════════════════╝
+          {/* Metaflow Architecture Diagram */}
+          <div className="font-mono text-[9px] md:text-[11px] text-zinc-400 overflow-x-auto pb-4">
+            <pre className="leading-tight">{`
+                            ┌─────────────────────────────────────────┐
+                            │            METAFLOW ENGINE              │
+                            │      Declarative Workflow Platform      │
+                            └────────────────────┬────────────────────┘
+                                                 │
+          ┌──────────────────────────────────────┼──────────────────────────────────────┐
+          │                                      │                                      │
+          ▼                                      ▼                                      ▼
+┌───────────────────────┐            ┌───────────────────────┐            ┌───────────────────────┐
+│    ONTOLOGY LAYER     │            │    ACTIONS ENGINE     │            │   PROCESS CANVAS      │
+│  ─────────────────    │            │  ─────────────────    │            │  ─────────────────    │
+│                       │            │                       │            │                       │
+│  ObjectTypes {        │            │  {                    │            │   ┌─────┐   ┌─────┐   │
+│    properties: {...}  │───────────▶│    parameters: [...], │───────────▶│   │Draft│──▶│ Rev │   │
+│    relations: [...]   │            │    criteria: [...],   │            │   └─────┘   └──┬──┘   │
+│  }                    │            │    rules: [...]       │            │        ╲      │      │
+│         │             │            │  }                    │            │         ╲     ▼      │
+│         ▼             │            │         │             │            │          ┌─────┐    │
+│  ┌─────────────┐      │            │         ▼             │            │          │Appr │    │
+│  │   JSONB     │      │            │  ┌─────────────┐      │            │          └─────┘    │
+│  │   Config    │      │            │  │  PL/pgSQL   │      │            │                      │
+│  └─────────────┘      │            │  │  1300 LOC   │      │            │  ReactFlow + Auto    │
+└───────────────────────┘            │  └──────┬──────┘      │            │  State Transitions   │
+                                     │         │             │            └───────────────────────┘
+                                     └─────────┼─────────────┘
+                                               │
+                    ┌──────────────────────────┴──────────────────────────┐
+                    │                                                      │
+                    ▼                                                      ▼
+     ┌────────────────────────────────┐             ┌────────────────────────────────┐
+     │      CRITERIA EVALUATION       │             │        RULE EXECUTION          │
+     │  ────────────────────────────  │             │  ────────────────────────────  │
+     │                                │             │                                │
+     │  Expression Tree (recursive)   │             │  • modify_object               │
+     │                                │             │  • create_object               │
+     │     ┌─────┐                    │             │  • delete_object               │
+     │     │ AND │                    │             │  • link_objects                │
+     │     └──┬──┘                    │             │                                │
+     │    ┌───┴───┐                   │             │  Property Sources:             │
+     │    ▼       ▼                   │             │  ─────────────────             │
+     │  ┌───┐   ┌───┐                 │             │  static | parameter            │
+     │  │ = │   │OR │                 │             │  current_user | timestamp      │
+     │  └───┘   └─┬─┘                 │             │  object_property               │
+     │        ┌───┴───┐               │             │         │                      │
+     │        ▼       ▼               │             │         ▼                      │
+     │      ┌───┐   ┌───┐             │             │  ┌─────────────────┐           │
+     │      │ > │   │ANY│─ M:N ──────┼─────────────┼─▶│ ATOMIC COMMIT   │           │
+     │      └───┘   └───┘             │             │  │ (transaction)   │           │
+     │                                │             │  └─────────────────┘           │
+     │  order.customer.status = ?     │             │                                │
+     │  └─┬──┘└──┬───┘└──┬──┘         │             │                                │
+     │    │     │      │              │             │                                │
+     │   base  M:1   property         │             │                                │
+     │    │   join     │              │             │                                │
+     │    └─────┴──────┘              │             │                                │
+     │          │                     │             │                                │
+     │          ▼                     │             │                                │
+     │   Dynamic SQL Generation       │             │                                │
+     └────────────────────────────────┘             └────────────────────────────────┘
+                    │                                               │
+                    └───────────────────────┬───────────────────────┘
+                                            │
+                                            ▼
+                         ┌─────────────────────────────────────┐
+                         │            POSTGRESQL               │
+                         │  ─────────────────────────────────  │
+                         │   metaflow.objects    (JSONB data)  │
+                         │   metaflow.relations  (M:N links)   │
+                         │   metaflow.action_types (configs)   │
+                         └─────────────────────────────────────┘
             `}</pre>
           </div>
         </div>
