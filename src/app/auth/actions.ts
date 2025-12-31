@@ -57,7 +57,7 @@ export async function loginAsDemo(redirectTo?: string) {
   const supabase = await createClient()
 
   const { error } = await supabase.auth.signInWithPassword({
-    email: 'demo@platform.local',
+    email: 'demo@example.com',
     password: 'demo123456',
   })
 
