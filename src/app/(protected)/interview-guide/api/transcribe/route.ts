@@ -26,38 +26,9 @@ async function getSystemPrompt(): Promise<string> {
   }
 }
 
-// Question detection patterns
-const QUESTION_PATTERNS = [
-  /\?$/,
-  /^(what|how|why|when|where|who|can you|could you|would you|tell me|describe|explain|walk me through)/i,
-]
-
-const FOLLOWUP_PATTERNS = [
-  /^(and|also|what about|how about|okay|so)/i,
-]
-
 interface Utterance {
   text: string
-  isQuestion: boolean
   hint?: string
-}
-
-function isQuestion(text: string, hasHistory: boolean): boolean {
-  const trimmed = text.trim()
-
-  // Direct question patterns
-  for (const pattern of QUESTION_PATTERNS) {
-    if (pattern.test(trimmed)) return true
-  }
-
-  // Follow-up patterns (only if we have history)
-  if (hasHistory) {
-    for (const pattern of FOLLOWUP_PATTERNS) {
-      if (pattern.test(trimmed)) return true
-    }
-  }
-
-  return false
 }
 
 export async function POST(request: NextRequest) {
@@ -111,51 +82,39 @@ export async function POST(request: NextRequest) {
       text = (await readFile(txtPath, 'utf-8')).trim()
     } catch {
       // No transcription output (silence or error)
-      return NextResponse.json({ text: '', isQuestion: false })
+      return NextResponse.json({ text: '', hint: null })
     }
 
     if (!text) {
-      return NextResponse.json({ text: '', isQuestion: false })
+      return NextResponse.json({ text: '', hint: null })
     }
 
-    // Check if it's a question
-    const questionDetected = isQuestion(text, history.length > 0)
+    // Build conversation context for Claude
+    const systemPrompt = await getSystemPrompt()
+
+    const contextMessages = history.slice(-10).map(u => u.text).join('\n')
+
+    const userMessage = contextMessages
+      ? `Conversation so far:\n${contextMessages}\n\nLatest: "${text}"\n\nGive 2-3 short, info-dense bullet points to help respond. Be direct.`
+      : `Interviewer said: "${text}"\n\nGive 2-3 short, info-dense bullet points to help respond. Be direct.`
 
     let hint: string | undefined
 
-    if (questionDetected) {
-      // Build conversation context for Claude
-      const systemPrompt = await getSystemPrompt()
+    try {
+      const response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 300,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userMessage }],
+      })
 
-      const contextMessages = history.slice(-10).map(u =>
-        `${u.isQuestion ? 'Interviewer' : 'Candidate'}: ${u.text}`
-      ).join('\n')
-
-      const userMessage = contextMessages
-        ? `Previous conversation:\n${contextMessages}\n\nNew question from interviewer: ${text}\n\nProvide a concise hint (2-3 bullet points) for answering this question.`
-        : `Interview question: ${text}\n\nProvide a concise hint (2-3 bullet points) for answering this question.`
-
-      try {
-        const response = await anthropic.messages.create({
-          model: 'claude-sonnet-4-5-20250929',
-          max_tokens: 512,
-          system: systemPrompt,
-          messages: [{ role: 'user', content: userMessage }],
-        })
-
-        const textBlock = response.content.find(b => b.type === 'text')
-        hint = textBlock?.type === 'text' ? textBlock.text : undefined
-      } catch (err) {
-        console.error('Claude API error:', err)
-        // Continue without hint
-      }
+      const textBlock = response.content.find(b => b.type === 'text')
+      hint = textBlock?.type === 'text' ? textBlock.text : undefined
+    } catch (err) {
+      console.error('Claude API error:', err)
     }
 
-    return NextResponse.json({
-      text,
-      isQuestion: questionDetected,
-      hint,
-    })
+    return NextResponse.json({ text, hint })
 
   } catch (error) {
     console.error('Transcribe error:', error)

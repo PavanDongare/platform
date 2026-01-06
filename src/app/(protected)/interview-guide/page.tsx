@@ -7,7 +7,6 @@ import { useRecorder } from './lib/use-recorder'
 
 interface Utterance {
   text: string
-  isQuestion: boolean
   hint?: string
   timestamp: number
 }
@@ -41,7 +40,6 @@ export default function InterviewGuidePage() {
       if (data.text) {
         setHistory(prev => [...prev, {
           text: data.text,
-          isQuestion: data.isQuestion,
           hint: data.hint,
           timestamp: Date.now(),
         }])
@@ -129,38 +127,19 @@ export default function InterviewGuidePage() {
             <div className="text-center py-12 text-muted-foreground">
               <Mic className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>Click Start to begin recording</p>
-              <p className="text-sm mt-2">Questions will be detected and hints provided automatically</p>
+              <p className="text-sm mt-2">Get helpful bullet points for everything spoken</p>
             </div>
           )}
 
-          {history.map((utterance, i) => (
+          {history.map((utterance) => (
             <div
               key={utterance.timestamp}
-              className={`p-4 rounded-lg border ${
-                utterance.isQuestion
-                  ? 'bg-primary/5 border-primary/20'
-                  : 'bg-muted/50 border-border'
-              }`}
+              className="p-4 rounded-lg border bg-muted/30 border-border"
             >
-              <div className="flex items-start gap-3">
-                <div className="flex-1">
-                  <p className={utterance.isQuestion ? 'font-medium' : ''}>
-                    {utterance.text}
-                  </p>
-                  {utterance.isQuestion && (
-                    <span className="inline-block mt-1 text-xs text-primary font-medium">
-                      Question detected
-                    </span>
-                  )}
-                </div>
-              </div>
-
+              <p className="text-muted-foreground text-sm mb-2">"{utterance.text}"</p>
               {utterance.hint && (
-                <div className="mt-3 pt-3 border-t border-primary/10">
-                  <p className="text-xs text-muted-foreground mb-2 font-medium">Suggested answer:</p>
-                  <div className="text-sm whitespace-pre-wrap prose prose-sm max-w-none">
-                    {utterance.hint}
-                  </div>
+                <div className="text-sm whitespace-pre-wrap">
+                  {utterance.hint}
                 </div>
               )}
             </div>
