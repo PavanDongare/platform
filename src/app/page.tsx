@@ -1,31 +1,50 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function PortfolioPage() {
   return (
     <div className="bg-white text-zinc-900 min-h-screen">
       {/* Hero - Confident with trust signals */}
       <section className="min-h-[70vh] flex flex-col justify-center px-8 md:px-16 lg:px-24 border-b border-zinc-100">
-        <div className="max-w-4xl">
-          <p className="text-zinc-400 text-sm tracking-wide mb-6">Pavan Dongare</p>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight leading-[1.1] mb-8">
-            I spec it, build it, ship it.
-          </h1>
-          <p className="text-lg text-zinc-600 mb-8 max-w-2xl">
-            Technical Product Manager with 7.5 years of experience building enterprise platforms
-            and early-stage products. I write specs, build prototypes, and ship.
-          </p>
+        <div className="max-w-5xl flex flex-col md:flex-row md:items-center md:justify-between gap-12">
+          <div className="flex-1 max-w-2xl">
+            <p className="text-zinc-400 text-sm tracking-wide mb-6">Pavan Dongare</p>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight leading-[1.1] mb-8">
+              I spec it, build it, ship it.
+            </h1>
+            <p className="text-lg text-zinc-600 mb-8">
+              Technical Product Manager with 7.5 years of experience building enterprise platforms
+              and early-stage products. I write specs, build prototypes, and ship.
+            </p>
 
-          {/* Trust signals - prominent */}
-          <div className="flex flex-wrap gap-6 text-sm mb-8">
-            <div className="flex items-center gap-2 bg-zinc-50 px-4 py-2 rounded">
-              <span className="text-zinc-400">Experience</span>
-              <span className="font-medium">7.5 years</span>
+            {/* Trust signals - prominent */}
+            <div className="flex flex-wrap gap-6 text-sm mb-8">
+              <div className="flex items-center gap-2 bg-zinc-50 px-4 py-2 rounded">
+                <span className="text-zinc-400">Experience</span>
+                <span className="font-medium">7.5 years</span>
+              </div>
+              <div className="flex items-center gap-2 bg-zinc-50 px-4 py-2 rounded">
+                <span className="text-zinc-400">Education</span>
+                <span className="font-medium">M.Tech, NIT Trichy</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 bg-zinc-50 px-4 py-2 rounded">
-              <span className="text-zinc-400">Education</span>
-              <span className="font-medium">M.Tech, NIT Trichy</span>
+          </div>
+
+          {/* Profile Photo */}
+          <div className="flex-shrink-0">
+            <div className="relative w-56 h-56 md:w-72 md:h-72 lg:w-80 lg:h-80">
+              <div className="absolute inset-0 bg-gradient-to-br from-zinc-200 to-zinc-300 rounded-2xl -rotate-3"></div>
+              <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-xl ring-1 ring-zinc-200">
+                <Image
+                  src="/pavan.png"
+                  alt="Pavan Dongare"
+                  fill
+                  className="object-cover object-top"
+                  priority
+                />
+              </div>
             </div>
           </div>
         </div>
