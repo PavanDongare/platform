@@ -13,18 +13,15 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 })
 
-// Load prompt from file (cached)
-let cachedPrompt: string | null = null
-async function getSystemPrompt(): Promise<string> {
-  if (cachedPrompt) return cachedPrompt
-  try {
-    const promptPath = join(process.cwd(), 'src/app/(protected)/interview-guide/prompt.md')
-    cachedPrompt = await readFile(promptPath, 'utf-8')
-    return cachedPrompt
-  } catch {
-    return 'You are an interview assistant. Provide concise, helpful hints for answering interview questions.'
-  }
-}
+const SYSTEM_PROMPT = `You are helping a candidate in a live interview. You hear the conversation between interviewer and candidate.
+
+Your job: Give the candidate strong bullet points to help them respond.
+
+Rules:
+- Bullets only. No explanations, no fluff.
+- At most 1 short title if needed, but prefer bullets alone.
+- Be direct and info-dense.
+- Give breadth of points they can pick from.`
 
 interface Utterance {
   text: string
@@ -90,13 +87,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Build conversation context for Claude
-    const systemPrompt = await getSystemPrompt()
-
     const contextMessages = history.slice(-10).map(u => u.text).join('\n')
 
     const userMessage = contextMessages
-      ? `Conversation so far:\n${contextMessages}\n\nLatest: "${text}"\n\nGive 2-3 short, info-dense bullet points to help respond. Be direct.`
-      : `Interviewer said: "${text}"\n\nGive 2-3 short, info-dense bullet points to help respond. Be direct.`
+      ? `Conversation so far:\n${contextMessages}\n\nLatest: "${text}"`
+      : `Interviewer: "${text}"`
 
     let hint: string | undefined
 

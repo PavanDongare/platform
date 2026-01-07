@@ -35,6 +35,7 @@ export function useRecorder(options: UseRecorderOptions = {}): UseRecorderReturn
   const audioContextRef = useRef<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const chunksRef = useRef<Blob[]>([])
   const rafRef = useRef<number | null>(null)
 
   const speechStartRef = useRef<number | null>(null)
@@ -46,43 +47,45 @@ export function useRecorder(options: UseRecorderOptions = {}): UseRecorderReturn
   onChunkRef.current = onChunk
   onErrorRef.current = onError
 
-  // Create a new MediaRecorder instance
-  const createMediaRecorder = useCallback(() => {
-    if (!streamRef.current) return null
+  // Start a new MediaRecorder (called when speech begins)
+  const startRecording = useCallback(() => {
+    if (!streamRef.current || mediaRecorderRef.current) return
 
     const mediaRecorder = new MediaRecorder(streamRef.current, {
       mimeType: 'audio/webm',
     })
 
-    const chunks: Blob[] = []
+    chunksRef.current = []
 
     mediaRecorder.ondataavailable = (e) => {
       if (e.data.size > 0) {
-        chunks.push(e.data)
+        chunksRef.current.push(e.data)
       }
     }
 
     mediaRecorder.onstop = () => {
-      if (chunks.length > 0) {
-        const blob = new Blob(chunks, { type: 'audio/webm' })
+      if (chunksRef.current.length > 0) {
+        const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
         onChunkRef.current?.(blob)
       }
-
-      // Start a new recorder if still active
-      if (isActiveRef.current && streamRef.current) {
-        const newRecorder = createMediaRecorder()
-        if (newRecorder) {
-          mediaRecorderRef.current = newRecorder
-          newRecorder.start(100)
-        }
-      }
+      chunksRef.current = []
+      mediaRecorderRef.current = null
     }
 
     mediaRecorder.onerror = () => {
       onErrorRef.current?.(new Error('MediaRecorder error'))
+      mediaRecorderRef.current = null
     }
 
-    return mediaRecorder
+    mediaRecorderRef.current = mediaRecorder
+    mediaRecorder.start(100)
+  }, [])
+
+  // Stop current MediaRecorder (called when silence detected)
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop()
+    }
   }, [])
 
   // Process audio levels
@@ -106,12 +109,17 @@ export function useRecorder(options: UseRecorderOptions = {}): UseRecorderReturn
     const isSpeakingNow = volumeLevel > silenceThreshold
 
     if (isSpeakingNow) {
+      // Speech detected
       silenceStartRef.current = null
+
       if (!speechStartRef.current) {
+        // Speech just started - begin recording
         speechStartRef.current = now
         setIsSpeaking(true)
+        startRecording()
       }
     } else {
+      // Silence detected
       if (speechStartRef.current && !silenceStartRef.current) {
         silenceStartRef.current = now
       }
@@ -126,9 +134,11 @@ export function useRecorder(options: UseRecorderOptions = {}): UseRecorderReturn
 
         // Only send if enough speech was captured
         if (speechDuration >= minSpeechDuration) {
-          // Stop current recorder - this triggers onstop which sends the blob
-          // and starts a new recorder
+          stopRecording()
+        } else {
+          // Too short - discard
           if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+            chunksRef.current = [] // Clear chunks so onstop doesn't send
             mediaRecorderRef.current.stop()
           }
         }
@@ -141,14 +151,14 @@ export function useRecorder(options: UseRecorderOptions = {}): UseRecorderReturn
     }
 
     rafRef.current = requestAnimationFrame(processAudio)
-  }, [silenceThreshold, silenceDuration, minSpeechDuration])
+  }, [silenceThreshold, silenceDuration, minSpeechDuration, startRecording, stopRecording])
 
   const start = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       streamRef.current = stream
 
-      // Set up audio analysis
+      // Set up audio analysis only - no recording yet
       const audioContext = new AudioContext()
       const source = audioContext.createMediaStreamSource(stream)
       const analyser = audioContext.createAnalyser()
@@ -158,29 +168,23 @@ export function useRecorder(options: UseRecorderOptions = {}): UseRecorderReturn
       audioContextRef.current = audioContext
       analyserRef.current = analyser
 
-      // Create and start first media recorder
-      const mediaRecorder = createMediaRecorder()
-      if (mediaRecorder) {
-        mediaRecorderRef.current = mediaRecorder
-        mediaRecorder.start(100)
-      }
-
       isActiveRef.current = true
       setIsRecording(true)
       speechStartRef.current = null
       silenceStartRef.current = null
 
-      // Start audio processing loop
+      // Start audio processing loop (listening for speech)
       rafRef.current = requestAnimationFrame(processAudio)
 
     } catch (err) {
       onErrorRef.current?.(err instanceof Error ? err : new Error('Failed to start recording'))
     }
-  }, [createMediaRecorder, processAudio])
+  }, [processAudio])
 
   const stop = useCallback(() => {
     isActiveRef.current = false
 
+    // Stop any active recording
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop()
     }
