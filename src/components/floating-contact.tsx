@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { MessageCircle, X, Linkedin, Twitter, Mail, Calendar } from 'lucide-react'
+import { MessageCircle, X, Linkedin, Mail, Calendar } from 'lucide-react'
 
 declare global {
   interface Window {
@@ -16,11 +16,6 @@ const contactLinks = [
     label: 'LinkedIn',
     href: 'https://www.linkedin.com/in/pavan-dongare/',
     icon: Linkedin,
-  },
-  {
-    label: 'Twitter',
-    href: 'https://x.com/Pavan_Dongare',
-    icon: Twitter,
   },
   {
     label: 'Email',

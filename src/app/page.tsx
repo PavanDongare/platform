@@ -293,14 +293,6 @@ export default function PortfolioPage() {
               LinkedIn
             </a>
             <a
-              href="https://x.com/Pavan_Dongare"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-zinc-400 hover:text-zinc-900 transition-colors"
-            >
-              Twitter
-            </a>
-            <a
               href="https://github.com/pavandongare"
               target="_blank"
               rel="noopener noreferrer"
