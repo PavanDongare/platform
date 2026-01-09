@@ -285,12 +285,20 @@ export default function PortfolioPage() {
           </div>
           <div className="flex gap-6 text-sm">
             <a
-              href="https://linkedin.com/in/pavandongare"
+              href="https://www.linkedin.com/in/pavan-dongare/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-zinc-400 hover:text-zinc-900 transition-colors"
             >
               LinkedIn
+            </a>
+            <a
+              href="https://x.com/Pavan_Dongare"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-zinc-400 hover:text-zinc-900 transition-colors"
+            >
+              Twitter
             </a>
             <a
               href="https://github.com/pavandongare"
