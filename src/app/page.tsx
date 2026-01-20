@@ -84,6 +84,244 @@ export default function PortfolioPage() {
         </div>
       </section>
 
+      {/* Projects - Full-width showcase cards */}
+      <section className="py-20 px-8 md:px-16 lg:px-24 border-b border-zinc-100">
+        <div className="max-w-5xl">
+          <p className="text-zinc-400 text-xs uppercase tracking-widest mb-20">Selected Work</p>
+
+          {/* Metaflow - 01 of 04 */}
+          <div className="border border-zinc-100 rounded-lg p-8 lg:p-12 mb-16 lg:mb-20 hover:border-zinc-200 transition-colors">
+            <div className="flex items-center justify-between mb-8">
+              <span className="text-xs uppercase tracking-widest text-zinc-400">Workflow Engine</span>
+              <span className="text-xs uppercase tracking-widest text-zinc-400">01 of 04</span>
+            </div>
+
+            <Link href="/metaflow" className="group">
+              <h2 className="text-4xl lg:text-5xl font-medium mb-8 group-hover:text-zinc-600 transition-colors">
+                Metaflow
+              </h2>
+            </Link>
+
+            <div className="border-t border-zinc-50 my-8"></div>
+
+            <div className="mb-8">
+              <p className="text-lg text-zinc-600 leading-relaxed mb-6">
+                <span className="text-zinc-900 font-medium">The problem:</span>{' '}
+                every new workflow required custom application code. Approval chains, status transitions, validation rules — all hardcoded. Adding a new process meant weeks of development.
+              </p>
+              <p className="text-lg text-zinc-600 leading-relaxed">
+                <span className="text-zinc-900 font-medium">The solution:</span>{' '}
+                push the logic to the database. Define workflows as JSON configurations. Let PostgreSQL handle execution, validation, and state transitions at runtime.
+              </p>
+            </div>
+
+            <div className="border-t border-zinc-50 my-8"></div>
+
+            <div className="mb-8">
+              <p className="text-xs uppercase tracking-widest text-zinc-400 mb-6">Technical Implementation</p>
+              <div className="grid md:grid-cols-2 gap-x-12 gap-y-4 text-sm mb-8">
+                <div className="flex justify-between py-2">
+                  <span className="text-zinc-400">Core engine</span>
+                  <span className="text-zinc-900 font-mono">1,300 LOC PL/pgSQL</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-zinc-400">Criteria evaluation</span>
+                  <span className="text-zinc-900">Recursive expression trees</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-zinc-400">Relationship traversal</span>
+                  <span className="text-zinc-900">Dynamic SQL generation</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-zinc-400">New workflow setup</span>
+                  <span className="text-zinc-900">JSON config only</span>
+                </div>
+              </div>
+
+              <div className="bg-zinc-50 rounded-lg p-6 font-mono text-xs text-zinc-600 overflow-x-auto">
+                <p className="text-zinc-400 mb-3"># Example: Criteria evaluation path resolution</p>
+                <p className="text-zinc-700">order.customer.account.status = &apos;active&apos;</p>
+                <p className="text-zinc-500 mt-2">→ Resolves to JOINs at query time: orders → customers → accounts</p>
+                <p className="text-zinc-500">→ Supports M:N with ANY/ALL quantifiers</p>
+              </div>
+            </div>
+
+            <div className="border-t border-zinc-50 my-8"></div>
+
+            <div className="flex gap-8">
+              <Link href="/metaflow" className="text-sm text-zinc-400 hover:text-zinc-900 transition-colors">
+                View live demo →
+              </Link>
+            </div>
+          </div>
+
+          {/* Cited - 02 of 04 */}
+          <div className="border border-zinc-100 rounded-lg p-8 lg:p-12 mb-16 lg:mb-20 hover:border-zinc-200 transition-colors">
+            <div className="flex items-center justify-between mb-8">
+              <span className="text-xs uppercase tracking-widest text-zinc-400">Generative Engine Optimization</span>
+              <span className="text-xs uppercase tracking-widest text-zinc-400">02 of 04</span>
+            </div>
+
+            <a href="https://cited.pavandongare.com" target="_blank" rel="noopener noreferrer" className="group">
+              <h2 className="text-4xl lg:text-5xl font-medium mb-8 group-hover:text-zinc-600 transition-colors">
+                Cited
+              </h2>
+            </a>
+
+            <div className="border-t border-zinc-50 my-8"></div>
+
+            <div className="mb-8">
+              <p className="text-lg text-zinc-600 leading-relaxed mb-6">
+                <span className="text-zinc-900 font-medium">The problem:</span>{' '}
+                Search is shifting. Instead of ranking #1 on Google, brands need to be sources that AI cites. Content is invisible if it&apos;s not structured for how LLMs consume it.
+              </p>
+              <p className="text-lg text-zinc-600 leading-relaxed">
+                <span className="text-zinc-900 font-medium">The solution:</span>{' '}
+                Submit your URL, get a GEO readiness score across 8 optimization dimensions. AI evaluates structure, metadata, data formatting, brand mentions. Get specific recommendations to become quotable.
+              </p>
+            </div>
+
+            <div className="border-t border-zinc-50 my-8"></div>
+
+            <div className="mb-8">
+              <p className="text-xs uppercase tracking-widest text-zinc-400 mb-6">Technical Implementation</p>
+              <div className="grid md:grid-cols-2 gap-x-12 gap-y-4 text-sm mb-8">
+                <div className="flex justify-between py-2">
+                  <span className="text-zinc-400">Scoring dimensions</span>
+                  <span className="text-zinc-900">8 optimization factors</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-zinc-400">Content extraction</span>
+                  <span className="text-zinc-900">URL parsing + analysis</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-zinc-400">Recommendations</span>
+                  <span className="text-zinc-900">AI-generated optimization</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-zinc-400">Access</span>
+                  <span className="text-zinc-900">Free audits via /autopilot</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-zinc-50 my-8"></div>
+
+            <div className="flex gap-8">
+              <a href="https://cited.pavandongare.com" target="_blank" rel="noopener noreferrer" className="text-sm text-zinc-400 hover:text-zinc-900 transition-colors">
+                View live app →
+              </a>
+            </div>
+          </div>
+
+          {/* Document Intelligence - 03 of 04 */}
+          <div className="border border-zinc-100 rounded-lg p-8 lg:p-12 mb-16 lg:mb-20 hover:border-zinc-200 transition-colors">
+            <div className="flex items-center justify-between mb-8">
+              <span className="text-xs uppercase tracking-widest text-zinc-400">AI-Powered DMS</span>
+              <span className="text-xs uppercase tracking-widest text-zinc-400">03 of 04</span>
+            </div>
+
+            <Link href="/dms" className="group">
+              <h2 className="text-4xl lg:text-5xl font-medium mb-8 group-hover:text-zinc-600 transition-colors">
+                Document Intelligence
+              </h2>
+            </Link>
+
+            <div className="border-t border-zinc-50 my-8"></div>
+
+            <div className="mb-8">
+              <p className="text-lg text-zinc-600 leading-relaxed mb-6">
+                <span className="text-zinc-900 font-medium">The problem:</span>{' '}
+                Managing documents manually is tedious and error-prone. Manual tagging, folder hierarchies to maintain, and inconsistent metadata make it hard to find anything.
+              </p>
+              <p className="text-lg text-zinc-600 leading-relaxed">
+                <span className="text-zinc-900 font-medium">The solution:</span>{' '}
+                Upload a document. AI extracts metadata, categorizes it, makes it searchable. Chat interface with tool-use: search documents, create folders, organize — all through natural language.
+              </p>
+            </div>
+
+            <div className="border-t border-zinc-50 my-8"></div>
+
+            <div className="mb-8">
+              <p className="text-xs uppercase tracking-widest text-zinc-400 mb-6">Technical Implementation</p>
+              <div className="grid md:grid-cols-2 gap-x-12 gap-y-4 text-sm mb-8">
+                <div className="flex justify-between py-2">
+                  <span className="text-zinc-400">Extraction model</span>
+                  <span className="text-zinc-900">Claude Haiku</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-zinc-400">Supported formats</span>
+                  <span className="text-zinc-900">PDF, images</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-zinc-400">Chat interface</span>
+                  <span className="text-zinc-900">Tool-use for actions</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-zinc-50 my-8"></div>
+
+            <div className="flex gap-8">
+              <Link href="/dms" className="text-sm text-zinc-400 hover:text-zinc-900 transition-colors">
+                View live demo →
+              </Link>
+            </div>
+          </div>
+
+          {/* Spatial Notes - 04 of 04 */}
+          <div className="border border-zinc-100 rounded-lg p-8 lg:p-12 mb-16 lg:mb-20 hover:border-zinc-200 transition-colors">
+            <div className="flex items-center justify-between mb-8">
+              <span className="text-xs uppercase tracking-widest text-zinc-400">Canvas-Based</span>
+              <span className="text-xs uppercase tracking-widest text-zinc-400">04 of 04</span>
+            </div>
+
+            <Link href="/onenote" className="group">
+              <h2 className="text-4xl lg:text-5xl font-medium mb-8 group-hover:text-zinc-600 transition-colors">
+                Spatial Notes
+              </h2>
+            </Link>
+
+            <div className="border-t border-zinc-50 my-8"></div>
+
+            <div className="mb-8">
+              <p className="text-lg text-zinc-600 leading-relaxed">
+                <span className="text-zinc-900 font-medium">The concept:</span>{' '}
+                Notes shouldn&apos;t be trapped in linear documents. TLDraw canvas for freeform organization. Notebooks, sections, pages — with spatial freedom within each.
+              </p>
+            </div>
+
+            <div className="border-t border-zinc-50 my-8"></div>
+
+            <div className="mb-8">
+              <p className="text-xs uppercase tracking-widest text-zinc-400 mb-6">Technical Implementation</p>
+              <div className="grid md:grid-cols-2 gap-x-12 gap-y-4 text-sm mb-8">
+                <div className="flex justify-between py-2">
+                  <span className="text-zinc-400">Canvas</span>
+                  <span className="text-zinc-900">TLDraw</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-zinc-400">State</span>
+                  <span className="text-zinc-900">Zustand</span>
+                </div>
+                <div className="flex justify-between py-2">
+                  <span className="text-zinc-400">Interaction</span>
+                  <span className="text-zinc-900">Drag and drop</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-zinc-50 my-8"></div>
+
+            <div className="flex gap-8">
+              <Link href="/onenote" className="text-sm text-zinc-400 hover:text-zinc-900 transition-colors">
+                View live demo →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* What I do - with specifics */}
       <section className="py-16 px-8 md:px-16 lg:px-24 border-b border-zinc-100">
         <div className="max-w-4xl">
@@ -106,199 +344,6 @@ export default function PortfolioPage() {
                 Ship fast, learn faster. The projects below are live — not mockups, not ideas, working software.
               </p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Projects - Case study style */}
-      <section className="py-20 px-8 md:px-16 lg:px-24">
-        <div className="max-w-5xl">
-          <p className="text-zinc-400 text-xs uppercase tracking-widest mb-16">Selected Work</p>
-
-          {/* Metaflow */}
-          <div className="mb-24">
-            <div className="flex items-baseline justify-between mb-4">
-              <Link href="/metaflow" className="group">
-                <h2 className="text-2xl md:text-3xl font-medium group-hover:text-zinc-500 transition-colors">
-                  Metaflow
-                </h2>
-              </Link>
-              <span className="text-zinc-400 text-sm">Workflow Engine</span>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-12 mb-8">
-              <div>
-                <p className="text-zinc-500 leading-relaxed mb-6">
-                  The problem: every new workflow required custom application code. Approval chains,
-                  status transitions, validation rules — all hardcoded. Adding a new process meant
-                  weeks of development.
-                </p>
-                <p className="text-zinc-500 leading-relaxed">
-                  The solution: push the logic to the database. Define workflows as JSON configurations.
-                  Let PostgreSQL handle execution, validation, and state transitions at runtime.
-                </p>
-              </div>
-              <div className="space-y-4 text-sm">
-                <div className="flex justify-between py-2 border-b border-zinc-100">
-                  <span className="text-zinc-400">Core engine</span>
-                  <span className="text-zinc-900 font-mono">1,300 LOC PL/pgSQL</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-zinc-100">
-                  <span className="text-zinc-400">Criteria evaluation</span>
-                  <span className="text-zinc-900">Recursive expression trees</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-zinc-100">
-                  <span className="text-zinc-400">Relationship traversal</span>
-                  <span className="text-zinc-900">Dynamic SQL generation</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-zinc-100">
-                  <span className="text-zinc-400">New workflow setup</span>
-                  <span className="text-zinc-900">JSON config only</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Technical detail - shows depth */}
-            <div className="bg-zinc-50 rounded-lg p-6 font-mono text-xs text-zinc-600 overflow-x-auto">
-              <p className="text-zinc-400 mb-3"># Example: Criteria evaluation path resolution</p>
-              <p className="text-zinc-700">order.customer.account.status = &apos;active&apos;</p>
-              <p className="text-zinc-500 mt-2">→ Resolves to JOINs at query time: orders → customers → accounts</p>
-              <p className="text-zinc-500">→ Supports M:N with ANY/ALL quantifiers</p>
-            </div>
-
-            <Link href="/metaflow" className="inline-block mt-6 text-sm text-zinc-400 hover:text-zinc-900 transition-colors">
-              View live demo →
-            </Link>
-          </div>
-
-          {/* Cited */}
-          <div className="mb-24">
-            <div className="flex items-baseline justify-between mb-4">
-              <a href="https://cited.pavandongare.com" target="_blank" rel="noopener noreferrer" className="group">
-                <h2 className="text-2xl md:text-3xl font-medium group-hover:text-zinc-500 transition-colors">
-                  Cited
-                </h2>
-              </a>
-              <span className="text-zinc-400 text-sm">Generative Engine Optimization</span>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-12 mb-8">
-              <div>
-                <p className="text-zinc-500 leading-relaxed mb-6">
-                  The problem: Search is shifting. Instead of ranking #1 on Google, brands need to be sources that AI cites.
-                  Content is invisible if it's not structured for how LLMs consume it.
-                </p>
-                <p className="text-zinc-500 leading-relaxed">
-                  The solution: Submit your URL, get a GEO readiness score across 8 optimization dimensions.
-                  AI evaluates structure, metadata, data formatting, brand mentions. Get specific recommendations
-                  to become quotable.
-                </p>
-              </div>
-              <div className="space-y-4 text-sm">
-                <div className="flex justify-between py-2 border-b border-zinc-100">
-                  <span className="text-zinc-400">Scoring dimensions</span>
-                  <span className="text-zinc-900">8 optimization factors</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-zinc-100">
-                  <span className="text-zinc-400">Content extraction</span>
-                  <span className="text-zinc-900">URL parsing + analysis</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-zinc-100">
-                  <span className="text-zinc-400">Recommendations</span>
-                  <span className="text-zinc-900">AI-generated optimization</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-zinc-100">
-                  <span className="text-zinc-400">Access</span>
-                  <span className="text-zinc-900">Free audits via /autopilot</span>
-                </div>
-              </div>
-            </div>
-
-            <a href="https://cited.pavandongare.com" target="_blank" rel="noopener noreferrer" className="inline-block text-sm text-zinc-400 hover:text-zinc-900 transition-colors">
-              View live app →
-            </a>
-          </div>
-
-          {/* DMS */}
-          <div className="mb-24">
-            <div className="flex items-baseline justify-between mb-4">
-              <Link href="/dms" className="group">
-                <h2 className="text-2xl md:text-3xl font-medium group-hover:text-zinc-500 transition-colors">
-                  Document Intelligence
-                </h2>
-              </Link>
-              <span className="text-zinc-400 text-sm">AI-Powered DMS</span>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-12 mb-8">
-              <div>
-                <p className="text-zinc-500 leading-relaxed mb-6">
-                  Upload a document. AI extracts metadata, categorizes it, makes it searchable.
-                  No manual tagging, no folder hierarchies to maintain.
-                </p>
-                <p className="text-zinc-500 leading-relaxed">
-                  Chat interface with tool-use: search documents, create folders, organize —
-                  all through natural language.
-                </p>
-              </div>
-              <div className="space-y-4 text-sm">
-                <div className="flex justify-between py-2 border-b border-zinc-100">
-                  <span className="text-zinc-400">Extraction model</span>
-                  <span className="text-zinc-900">Claude Haiku</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-zinc-100">
-                  <span className="text-zinc-400">Supported formats</span>
-                  <span className="text-zinc-900">PDF, images</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-zinc-100">
-                  <span className="text-zinc-400">Chat interface</span>
-                  <span className="text-zinc-900">Tool-use for actions</span>
-                </div>
-              </div>
-            </div>
-
-            <Link href="/dms" className="inline-block text-sm text-zinc-400 hover:text-zinc-900 transition-colors">
-              View live demo →
-            </Link>
-          </div>
-
-          {/* Notes */}
-          <div className="mb-24">
-            <div className="flex items-baseline justify-between mb-4">
-              <Link href="/onenote" className="group">
-                <h2 className="text-2xl md:text-3xl font-medium group-hover:text-zinc-500 transition-colors">
-                  Spatial Notes
-                </h2>
-              </Link>
-              <span className="text-zinc-400 text-sm">Canvas-Based</span>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-12 mb-8">
-              <div>
-                <p className="text-zinc-500 leading-relaxed">
-                  Notes shouldn&apos;t be trapped in linear documents. TLDraw canvas for freeform
-                  organization. Notebooks, sections, pages — with spatial freedom within each.
-                </p>
-              </div>
-              <div className="space-y-4 text-sm">
-                <div className="flex justify-between py-2 border-b border-zinc-100">
-                  <span className="text-zinc-400">Canvas</span>
-                  <span className="text-zinc-900">TLDraw</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-zinc-100">
-                  <span className="text-zinc-400">State</span>
-                  <span className="text-zinc-900">Zustand</span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-zinc-100">
-                  <span className="text-zinc-400">Interaction</span>
-                  <span className="text-zinc-900">Drag and drop</span>
-                </div>
-              </div>
-            </div>
-
-            <Link href="/onenote" className="inline-block text-sm text-zinc-400 hover:text-zinc-900 transition-colors">
-              View live demo →
-            </Link>
           </div>
         </div>
       </section>
