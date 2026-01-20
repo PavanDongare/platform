@@ -171,6 +171,54 @@ export default function PortfolioPage() {
             </Link>
           </div>
 
+          {/* Cited */}
+          <div className="mb-24">
+            <div className="flex items-baseline justify-between mb-4">
+              <a href="https://cited.pavandongare.com" target="_blank" rel="noopener noreferrer" className="group">
+                <h2 className="text-2xl md:text-3xl font-medium group-hover:text-zinc-500 transition-colors">
+                  Cited
+                </h2>
+              </a>
+              <span className="text-zinc-400 text-sm">Generative Engine Optimization</span>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-12 mb-8">
+              <div>
+                <p className="text-zinc-500 leading-relaxed mb-6">
+                  The problem: Search is shifting. Instead of ranking #1 on Google, brands need to be sources that AI cites.
+                  Content is invisible if it's not structured for how LLMs consume it.
+                </p>
+                <p className="text-zinc-500 leading-relaxed">
+                  The solution: Submit your URL, get a GEO readiness score across 8 optimization dimensions.
+                  AI evaluates structure, metadata, data formatting, brand mentions. Get specific recommendations
+                  to become quotable.
+                </p>
+              </div>
+              <div className="space-y-4 text-sm">
+                <div className="flex justify-between py-2 border-b border-zinc-100">
+                  <span className="text-zinc-400">Scoring dimensions</span>
+                  <span className="text-zinc-900">8 optimization factors</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-zinc-100">
+                  <span className="text-zinc-400">Content extraction</span>
+                  <span className="text-zinc-900">URL parsing + analysis</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-zinc-100">
+                  <span className="text-zinc-400">Recommendations</span>
+                  <span className="text-zinc-900">AI-generated optimization</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-zinc-100">
+                  <span className="text-zinc-400">Access</span>
+                  <span className="text-zinc-900">Free audits via /autopilot</span>
+                </div>
+              </div>
+            </div>
+
+            <a href="https://cited.pavandongare.com" target="_blank" rel="noopener noreferrer" className="inline-block text-sm text-zinc-400 hover:text-zinc-900 transition-colors">
+              View live app →
+            </a>
+          </div>
+
           {/* DMS */}
           <div className="mb-24">
             <div className="flex items-baseline justify-between mb-4">
