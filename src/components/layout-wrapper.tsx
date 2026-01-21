@@ -2,7 +2,6 @@
 
 import { usePathname } from 'next/navigation'
 import { AppSidebar } from '@/components/app-sidebar'
-import { FloatingContact } from '@/components/floating-contact'
 
 interface LayoutWrapperProps {
   children: React.ReactNode
@@ -21,7 +20,6 @@ export function LayoutWrapper({ children, email }: LayoutWrapperProps) {
     return (
       <main className="min-h-screen">
         {children}
-        <FloatingContact />
       </main>
     )
   }

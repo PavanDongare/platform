@@ -2,25 +2,17 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { Header } from '@/components/navigation/header'
+import { AboutSection } from '@/components/sections/about-section'
+import { ExperienceSection } from '@/components/sections/experience-section'
 
 export default function PortfolioPage() {
   return (
     <div className="bg-white text-zinc-900 min-h-screen">
-      {/* Floating Resume Button */}
-      <a
-        href="/pavandongare.pdf"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed top-4 left-1/2 -translate-x-1/2 z-50 inline-flex items-center gap-2 px-5 py-2 bg-zinc-900 text-white text-sm font-medium rounded-full hover:bg-zinc-800 transition-colors shadow-lg"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-        View Resume
-      </a>
+      <Header />
 
       {/* Hero - Confident with trust signals */}
-      <section className="min-h-[70vh] flex flex-col justify-center px-8 md:px-16 lg:px-24 border-b border-zinc-100">
+      <section id="about" className="scroll-mt-20 min-h-[70vh] flex flex-col justify-center px-8 md:px-16 lg:px-24 border-b border-zinc-100 pt-16">
         <div className="max-w-5xl flex flex-col md:flex-row md:items-center md:justify-between gap-12">
           <div className="flex-1 max-w-2xl">
             <p className="text-zinc-400 text-sm tracking-wide mb-6">Pavan Dongare</p>
@@ -63,261 +55,186 @@ export default function PortfolioPage() {
         </div>
       </section>
 
-      {/* Companies - Logo-style trust bar */}
-      <section className="py-8 px-8 md:px-16 lg:px-24 border-b border-zinc-100 bg-zinc-50">
-        <div className="max-w-4xl">
-          <p className="text-zinc-400 text-xs uppercase tracking-widest mb-6">Previously At</p>
-          <div className="flex flex-wrap gap-x-12 gap-y-4">
-            <div>
-              <p className="text-zinc-900 font-semibold">Morgan Stanley</p>
-              <p className="text-zinc-500 text-sm">Associate · Wealth Management Tech</p>
-            </div>
-            <div>
-              <p className="text-zinc-900 font-semibold">Deutsche Bank</p>
-              <p className="text-zinc-500 text-sm">Product Manager · Trading Platforms</p>
-            </div>
-            <div>
-              <p className="text-zinc-900 font-semibold">Series A Startups</p>
-              <p className="text-zinc-500 text-sm">Founding PM · 0→1 Products</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <AboutSection />
+
+      <ExperienceSection />
 
       {/* Projects - Full-width showcase cards */}
-      <section className="py-20 px-8 md:px-16 lg:px-24 border-b border-zinc-100">
+      <section id="projects" className="scroll-mt-20 py-20 px-8 md:px-16 lg:px-24 border-b border-zinc-100">
         <div className="max-w-5xl">
           <p className="text-zinc-400 text-xs uppercase tracking-widest mb-20">Selected Work</p>
 
           {/* Metaflow - 01 of 04 */}
-          <div className="border border-zinc-100 rounded-lg p-8 lg:p-12 mb-16 lg:mb-20 hover:border-zinc-200 transition-colors">
-            <div className="flex items-center justify-between mb-8">
+          <div className="border border-zinc-100 rounded-lg p-6 mb-12 hover:border-zinc-200 transition-colors">
+            <div className="flex items-center justify-between mb-4">
               <span className="text-xs uppercase tracking-widest text-zinc-400">Workflow Engine</span>
               <span className="text-xs uppercase tracking-widest text-zinc-400">01 of 04</span>
             </div>
 
             <Link href="/metaflow" className="group">
-              <h2 className="text-4xl lg:text-5xl font-medium mb-8 group-hover:text-zinc-600 transition-colors">
+              <h2 className="text-2xl lg:text-3xl font-medium mb-4 group-hover:text-zinc-600 transition-colors">
                 Metaflow
               </h2>
             </Link>
 
-            <div className="border-t border-zinc-50 my-8"></div>
+            <p className="text-sm text-zinc-600 mb-4">
+              <span className="font-medium">Problem:</span> Workflows hardcoded in application code. Adding new processes required weeks of development.
+            </p>
+            <p className="text-sm text-zinc-600 mb-4">
+              <span className="font-medium">Solution:</span> Push logic to database. Define workflows as JSON configs. PostgreSQL handles execution, validation, state transitions.
+            </p>
 
-            <div className="mb-8">
-              <p className="text-lg text-zinc-600 leading-relaxed mb-6">
-                <span className="text-zinc-900 font-medium">The problem:</span>{' '}
-                every new workflow required custom application code. Approval chains, status transitions, validation rules — all hardcoded. Adding a new process meant weeks of development.
-              </p>
-              <p className="text-lg text-zinc-600 leading-relaxed">
-                <span className="text-zinc-900 font-medium">The solution:</span>{' '}
-                push the logic to the database. Define workflows as JSON configurations. Let PostgreSQL handle execution, validation, and state transitions at runtime.
-              </p>
-            </div>
+            <div className="border-t border-zinc-50 my-4"></div>
 
-            <div className="border-t border-zinc-50 my-8"></div>
-
-            <div className="mb-8">
-              <p className="text-xs uppercase tracking-widest text-zinc-400 mb-6">Technical Implementation</p>
-              <div className="grid md:grid-cols-2 gap-x-12 gap-y-4 text-sm mb-8">
-                <div className="flex justify-between py-2">
-                  <span className="text-zinc-400">Core engine</span>
-                  <span className="text-zinc-900 font-mono">1,300 LOC PL/pgSQL</span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="text-zinc-400">Criteria evaluation</span>
-                  <span className="text-zinc-900">Recursive expression trees</span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="text-zinc-400">Relationship traversal</span>
-                  <span className="text-zinc-900">Dynamic SQL generation</span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="text-zinc-400">New workflow setup</span>
-                  <span className="text-zinc-900">JSON config only</span>
-                </div>
+            <div className="grid md:grid-cols-2 gap-x-8 gap-y-2 text-xs mb-4">
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Core engine</span>
+                <span className="text-zinc-900 font-mono">1,300 LOC PL/pgSQL</span>
               </div>
-
-              <div className="bg-zinc-50 rounded-lg p-6 font-mono text-xs text-zinc-600 overflow-x-auto">
-                <p className="text-zinc-400 mb-3"># Example: Criteria evaluation path resolution</p>
-                <p className="text-zinc-700">order.customer.account.status = &apos;active&apos;</p>
-                <p className="text-zinc-500 mt-2">→ Resolves to JOINs at query time: orders → customers → accounts</p>
-                <p className="text-zinc-500">→ Supports M:N with ANY/ALL quantifiers</p>
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Criteria evaluation</span>
+                <span className="text-zinc-900">Expression trees</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Relationship traversal</span>
+                <span className="text-zinc-900">Dynamic SQL</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Setup</span>
+                <span className="text-zinc-900">JSON config</span>
               </div>
             </div>
 
-            <div className="border-t border-zinc-50 my-8"></div>
-
-            <div className="flex gap-8">
-              <Link href="/metaflow" className="text-sm text-zinc-400 hover:text-zinc-900 transition-colors">
-                View live demo →
-              </Link>
-            </div>
+            <Link href="/metaflow" className="text-xs text-zinc-400 hover:text-zinc-900 transition-colors">
+              View live demo →
+            </Link>
           </div>
 
           {/* Cited - 02 of 04 */}
-          <div className="border border-zinc-100 rounded-lg p-8 lg:p-12 mb-16 lg:mb-20 hover:border-zinc-200 transition-colors">
-            <div className="flex items-center justify-between mb-8">
-              <span className="text-xs uppercase tracking-widest text-zinc-400">Generative Engine Optimization</span>
+          <div className="border border-zinc-100 rounded-lg p-6 mb-12 hover:border-zinc-200 transition-colors">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs uppercase tracking-widest text-zinc-400">GEO Readiness Score</span>
               <span className="text-xs uppercase tracking-widest text-zinc-400">02 of 04</span>
             </div>
 
             <a href="https://cited.pavandongare.com" target="_blank" rel="noopener noreferrer" className="group">
-              <h2 className="text-4xl lg:text-5xl font-medium mb-8 group-hover:text-zinc-600 transition-colors">
+              <h2 className="text-2xl lg:text-3xl font-medium mb-4 group-hover:text-zinc-600 transition-colors">
                 Cited
               </h2>
             </a>
 
-            <div className="border-t border-zinc-50 my-8"></div>
+            <p className="text-sm text-zinc-600 mb-4">
+              <span className="font-medium">Problem:</span> Brands invisible to AI search. Content must be structured for LLMs, not traditional SEO.
+            </p>
+            <p className="text-sm text-zinc-600 mb-4">
+              <span className="font-medium">Solution:</span> Submit URL, get GEO score across 8 dimensions. AI evaluates structure, metadata, formatting. Get recommendations to become quotable.
+            </p>
 
-            <div className="mb-8">
-              <p className="text-lg text-zinc-600 leading-relaxed mb-6">
-                <span className="text-zinc-900 font-medium">The problem:</span>{' '}
-                Search is shifting. Instead of ranking #1 on Google, brands need to be sources that AI cites. Content is invisible if it&apos;s not structured for how LLMs consume it.
-              </p>
-              <p className="text-lg text-zinc-600 leading-relaxed">
-                <span className="text-zinc-900 font-medium">The solution:</span>{' '}
-                Submit your URL, get a GEO readiness score across 8 optimization dimensions. AI evaluates structure, metadata, data formatting, brand mentions. Get specific recommendations to become quotable.
-              </p>
-            </div>
+            <div className="border-t border-zinc-50 my-4"></div>
 
-            <div className="border-t border-zinc-50 my-8"></div>
-
-            <div className="mb-8">
-              <p className="text-xs uppercase tracking-widest text-zinc-400 mb-6">Technical Implementation</p>
-              <div className="grid md:grid-cols-2 gap-x-12 gap-y-4 text-sm mb-8">
-                <div className="flex justify-between py-2">
-                  <span className="text-zinc-400">Scoring dimensions</span>
-                  <span className="text-zinc-900">8 optimization factors</span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="text-zinc-400">Content extraction</span>
-                  <span className="text-zinc-900">URL parsing + analysis</span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="text-zinc-400">Recommendations</span>
-                  <span className="text-zinc-900">AI-generated optimization</span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="text-zinc-400">Access</span>
-                  <span className="text-zinc-900">Free audits via /autopilot</span>
-                </div>
+            <div className="grid md:grid-cols-2 gap-x-8 gap-y-2 text-xs mb-4">
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Scoring dimensions</span>
+                <span className="text-zinc-900">8 factors</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Analysis</span>
+                <span className="text-zinc-900">AI-powered</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Extraction</span>
+                <span className="text-zinc-900">URL parsing</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Access</span>
+                <span className="text-zinc-900">Free audits</span>
               </div>
             </div>
 
-            <div className="border-t border-zinc-50 my-8"></div>
-
-            <div className="flex gap-8">
-              <a href="https://cited.pavandongare.com" target="_blank" rel="noopener noreferrer" className="text-sm text-zinc-400 hover:text-zinc-900 transition-colors">
-                View live app →
-              </a>
-            </div>
+            <a href="https://cited.pavandongare.com" target="_blank" rel="noopener noreferrer" className="text-xs text-zinc-400 hover:text-zinc-900 transition-colors">
+              View live app →
+            </a>
           </div>
 
           {/* Document Intelligence - 03 of 04 */}
-          <div className="border border-zinc-100 rounded-lg p-8 lg:p-12 mb-16 lg:mb-20 hover:border-zinc-200 transition-colors">
-            <div className="flex items-center justify-between mb-8">
+          <div className="border border-zinc-100 rounded-lg p-6 mb-12 hover:border-zinc-200 transition-colors">
+            <div className="flex items-center justify-between mb-4">
               <span className="text-xs uppercase tracking-widest text-zinc-400">AI-Powered DMS</span>
               <span className="text-xs uppercase tracking-widest text-zinc-400">03 of 04</span>
             </div>
 
             <Link href="/dms" className="group">
-              <h2 className="text-4xl lg:text-5xl font-medium mb-8 group-hover:text-zinc-600 transition-colors">
+              <h2 className="text-2xl lg:text-3xl font-medium mb-4 group-hover:text-zinc-600 transition-colors">
                 Document Intelligence
               </h2>
             </Link>
 
-            <div className="border-t border-zinc-50 my-8"></div>
+            <p className="text-sm text-zinc-600 mb-4">
+              <span className="font-medium">Problem:</span> Manual document management is tedious. Folder hierarchies, inconsistent metadata, hard to find anything.
+            </p>
+            <p className="text-sm text-zinc-600 mb-4">
+              <span className="font-medium">Solution:</span> Upload documents. AI extracts metadata, categorizes, makes searchable. Chat interface with tool-use for natural language operations.
+            </p>
 
-            <div className="mb-8">
-              <p className="text-lg text-zinc-600 leading-relaxed mb-6">
-                <span className="text-zinc-900 font-medium">The problem:</span>{' '}
-                Managing documents manually is tedious and error-prone. Manual tagging, folder hierarchies to maintain, and inconsistent metadata make it hard to find anything.
-              </p>
-              <p className="text-lg text-zinc-600 leading-relaxed">
-                <span className="text-zinc-900 font-medium">The solution:</span>{' '}
-                Upload a document. AI extracts metadata, categorizes it, makes it searchable. Chat interface with tool-use: search documents, create folders, organize — all through natural language.
-              </p>
-            </div>
+            <div className="border-t border-zinc-50 my-4"></div>
 
-            <div className="border-t border-zinc-50 my-8"></div>
-
-            <div className="mb-8">
-              <p className="text-xs uppercase tracking-widest text-zinc-400 mb-6">Technical Implementation</p>
-              <div className="grid md:grid-cols-2 gap-x-12 gap-y-4 text-sm mb-8">
-                <div className="flex justify-between py-2">
-                  <span className="text-zinc-400">Extraction model</span>
-                  <span className="text-zinc-900">Claude Haiku</span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="text-zinc-400">Supported formats</span>
-                  <span className="text-zinc-900">PDF, images</span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="text-zinc-400">Chat interface</span>
-                  <span className="text-zinc-900">Tool-use for actions</span>
-                </div>
+            <div className="grid md:grid-cols-2 gap-x-8 gap-y-2 text-xs mb-4">
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Extraction</span>
+                <span className="text-zinc-900">Claude Haiku</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Formats</span>
+                <span className="text-zinc-900">PDF, images</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Interface</span>
+                <span className="text-zinc-900">Chat + tool-use</span>
               </div>
             </div>
 
-            <div className="border-t border-zinc-50 my-8"></div>
-
-            <div className="flex gap-8">
-              <Link href="/dms" className="text-sm text-zinc-400 hover:text-zinc-900 transition-colors">
-                View live demo →
-              </Link>
-            </div>
+            <Link href="/dms" className="text-xs text-zinc-400 hover:text-zinc-900 transition-colors">
+              View live demo →
+            </Link>
           </div>
 
           {/* Spatial Notes - 04 of 04 */}
-          <div className="border border-zinc-100 rounded-lg p-8 lg:p-12 mb-16 lg:mb-20 hover:border-zinc-200 transition-colors">
-            <div className="flex items-center justify-between mb-8">
-              <span className="text-xs uppercase tracking-widest text-zinc-400">Canvas-Based</span>
+          <div className="border border-zinc-100 rounded-lg p-6 mb-12 hover:border-zinc-200 transition-colors">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs uppercase tracking-widest text-zinc-400">Canvas-Based Notes</span>
               <span className="text-xs uppercase tracking-widest text-zinc-400">04 of 04</span>
             </div>
 
             <Link href="/onenote" className="group">
-              <h2 className="text-4xl lg:text-5xl font-medium mb-8 group-hover:text-zinc-600 transition-colors">
+              <h2 className="text-2xl lg:text-3xl font-medium mb-4 group-hover:text-zinc-600 transition-colors">
                 Spatial Notes
               </h2>
             </Link>
 
-            <div className="border-t border-zinc-50 my-8"></div>
+            <p className="text-sm text-zinc-600 mb-4">
+              Notes shouldn&apos;t be trapped in linear documents. TLDraw canvas for freeform organization. Notebooks, sections, pages — with spatial freedom within each.
+            </p>
 
-            <div className="mb-8">
-              <p className="text-lg text-zinc-600 leading-relaxed">
-                <span className="text-zinc-900 font-medium">The concept:</span>{' '}
-                Notes shouldn&apos;t be trapped in linear documents. TLDraw canvas for freeform organization. Notebooks, sections, pages — with spatial freedom within each.
-              </p>
-            </div>
+            <div className="border-t border-zinc-50 my-4"></div>
 
-            <div className="border-t border-zinc-50 my-8"></div>
-
-            <div className="mb-8">
-              <p className="text-xs uppercase tracking-widest text-zinc-400 mb-6">Technical Implementation</p>
-              <div className="grid md:grid-cols-2 gap-x-12 gap-y-4 text-sm mb-8">
-                <div className="flex justify-between py-2">
-                  <span className="text-zinc-400">Canvas</span>
-                  <span className="text-zinc-900">TLDraw</span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="text-zinc-400">State</span>
-                  <span className="text-zinc-900">Zustand</span>
-                </div>
-                <div className="flex justify-between py-2">
-                  <span className="text-zinc-400">Interaction</span>
-                  <span className="text-zinc-900">Drag and drop</span>
-                </div>
+            <div className="grid md:grid-cols-3 gap-x-8 gap-y-2 text-xs mb-4">
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Canvas</span>
+                <span className="text-zinc-900">TLDraw</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-400">State</span>
+                <span className="text-zinc-900">Zustand</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Interaction</span>
+                <span className="text-zinc-900">Drag + drop</span>
               </div>
             </div>
 
-            <div className="border-t border-zinc-50 my-8"></div>
-
-            <div className="flex gap-8">
-              <Link href="/onenote" className="text-sm text-zinc-400 hover:text-zinc-900 transition-colors">
-                View live demo →
-              </Link>
-            </div>
+            <Link href="/onenote" className="text-xs text-zinc-400 hover:text-zinc-900 transition-colors">
+              View live demo →
+            </Link>
           </div>
         </div>
       </section>
@@ -383,7 +300,7 @@ export default function PortfolioPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-16 px-8 md:px-16 lg:px-24">
+      <footer id="contact" className="scroll-mt-20 py-16 px-8 md:px-16 lg:px-24">
         <div className="max-w-4xl flex flex-col md:flex-row md:items-center md:justify-between gap-8">
           <div>
             <p className="text-zinc-900 font-medium mb-1">Pavan Dongare</p>

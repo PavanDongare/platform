@@ -166,3 +166,8 @@
 .animation-delay-300 {
   animation-delay: 300ms;
 }
+
+/* Scroll margin for fixed header offset */
+.scroll-mt-20 {
+  scroll-margin-top: 5rem; /* 80px for header height */
+}
