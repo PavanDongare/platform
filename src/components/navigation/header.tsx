@@ -7,9 +7,8 @@ import { MobileMenu } from './mobile-menu'
 import { ContactDropdown } from './contact-dropdown'
 
 const navLinks = [
-  { label: 'About', href: '#about' },
+  { label: 'Experience', href: '#experience' },
   { label: 'Projects', href: '#projects' },
-  { label: 'Apps', href: '/apps' },
 ]
 
 export function Header() {
@@ -46,7 +45,7 @@ export function Header() {
     }, observerOptions)
 
     // Observe main sections
-    const sections = ['about', 'projects', 'contact']
+    const sections = ['experience', 'projects']
     sections.forEach((sectionId) => {
       const element = document.getElementById(sectionId)
       if (element) observer.observe(element)

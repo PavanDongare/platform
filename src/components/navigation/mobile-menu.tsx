@@ -18,7 +18,7 @@ interface MobileMenuProps {
 }
 
 const navLinks = [
-  { label: 'About', id: 'about' },
+  { label: 'Experience', id: 'experience' },
   { label: 'Projects', id: 'projects' },
 ]
 
@@ -65,13 +65,6 @@ export function MobileMenu({ activeSection, onLinkClick, onClose }: MobileMenuPr
               {link.label}
             </button>
           ))}
-          <Link
-            href="/apps"
-            className="text-left text-sm text-zinc-600 px-4 py-2 rounded-lg hover:text-zinc-900 transition-colors"
-            onClick={onClose}
-          >
-            Apps
-          </Link>
         </nav>
 
         {/* Resume Link */}
