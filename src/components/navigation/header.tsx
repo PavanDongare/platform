@@ -1,58 +1,25 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Menu, X, ChevronDown } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { MobileMenu } from './mobile-menu'
 import { ContactDropdown } from './contact-dropdown'
 
 const navLinks = [
-  { label: 'Experience', href: '#experience' },
-  { label: 'Projects', href: '#projects' },
+  { label: 'About', tab: 'about' as const },
+  { label: 'Experience', tab: 'experience' as const },
+  { label: 'Projects', tab: 'projects' as const },
 ]
 
-export function Header() {
-  const [activeSection, setActiveSection] = useState<string>('about')
+interface HeaderProps {
+  activeTab: 'about' | 'experience' | 'projects'
+  setActiveTab: (tab: 'about' | 'experience' | 'projects') => void
+}
+
+export function Header({ activeTab, setActiveTab }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const headerRef = useRef<HTMLElement>(null)
-
-  // Smooth scroll to section
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      const headerOffset = 80
-      const elementPosition = element.getBoundingClientRect().top
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset
-      window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
-      setMobileMenuOpen(false)
-    }
-  }
-
-  // Scroll spy to detect active section
-  useEffect(() => {
-    const observerOptions = {
-      rootMargin: '-80px 0px -80% 0px',
-      threshold: 0,
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setActiveSection(entry.target.id)
-        }
-      })
-    }, observerOptions)
-
-    // Observe main sections
-    const sections = ['experience', 'projects']
-    sections.forEach((sectionId) => {
-      const element = document.getElementById(sectionId)
-      if (element) observer.observe(element)
-    })
-
-    return () => observer.disconnect()
-  }, [])
 
   // Scroll detection for header styling
   useEffect(() => {
@@ -66,7 +33,6 @@ export function Header() {
   return (
     <>
       <header
-        ref={headerRef}
         className={`fixed top-0 left-0 right-0 z-40 h-16 border-b border-zinc-100 transition-all duration-300 ${
           isScrolled
             ? 'bg-white/95 backdrop-blur-sm shadow-sm'
@@ -94,14 +60,9 @@ export function Header() {
             {navLinks.map((link) => (
               <button
                 key={link.label}
-                onClick={(e) => {
-                  e.preventDefault()
-                  if (link.href.startsWith('#')) {
-                    scrollToSection(link.href.slice(1))
-                  }
-                }}
+                onClick={() => setActiveTab(link.tab)}
                 className={`text-sm transition-colors ${
-                  link.href.startsWith('#') && activeSection === link.href.slice(1)
+                  activeTab === link.tab
                     ? 'text-zinc-900 font-medium'
                     : 'text-zinc-600 hover:text-zinc-900'
                 }`}
@@ -146,8 +107,8 @@ export function Header() {
       {/* Mobile Menu */}
       {mobileMenuOpen && (
         <MobileMenu
-          activeSection={activeSection}
-          onLinkClick={(sectionId) => scrollToSection(sectionId)}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
           onClose={() => setMobileMenuOpen(false)}
         />
       )}

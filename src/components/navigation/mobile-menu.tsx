@@ -12,14 +12,15 @@ declare global {
 }
 
 interface MobileMenuProps {
-  activeSection: string
-  onLinkClick: (sectionId: string) => void
+  activeTab: 'about' | 'experience' | 'projects'
+  onTabChange: (tab: 'about' | 'experience' | 'projects') => void
   onClose: () => void
 }
 
 const navLinks = [
-  { label: 'Experience', id: 'experience' },
-  { label: 'Projects', id: 'projects' },
+  { label: 'About', tab: 'about' as const },
+  { label: 'Experience', tab: 'experience' as const },
+  { label: 'Projects', tab: 'projects' as const },
 ]
 
 const contactLinks = [
@@ -35,7 +36,7 @@ const contactLinks = [
   },
 ]
 
-export function MobileMenu({ activeSection, onLinkClick, onClose }: MobileMenuProps) {
+export function MobileMenu({ activeTab, onTabChange, onClose }: MobileMenuProps) {
   const openCalendly = () => {
     if (window.Calendly) {
       window.Calendly.initPopupWidget({
@@ -52,12 +53,13 @@ export function MobileMenu({ activeSection, onLinkClick, onClose }: MobileMenuPr
         <nav className="mb-8 flex flex-col gap-4">
           {navLinks.map((link) => (
             <button
-              key={link.id}
+              key={link.label}
               onClick={() => {
-                onLinkClick(link.id)
+                onTabChange(link.tab)
+                onClose()
               }}
               className={`text-left text-sm transition-colors px-4 py-2 rounded-lg ${
-                activeSection === link.id
+                activeTab === link.tab
                   ? 'text-zinc-900 font-medium bg-zinc-50'
                   : 'text-zinc-600'
               }`}

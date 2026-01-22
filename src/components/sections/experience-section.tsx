@@ -49,7 +49,7 @@ export function ExperienceSection() {
   ]
 
   return (
-    <section id="experience" className="scroll-mt-20 py-20 px-8 md:px-16 lg:px-24 border-b border-zinc-100">
+    <section className="py-20 px-8 md:px-16 lg:px-24 border-b border-zinc-100">
       <div className="max-w-5xl">
         <p className="text-zinc-400 text-xs uppercase tracking-widest mb-12">Experience</p>
 
