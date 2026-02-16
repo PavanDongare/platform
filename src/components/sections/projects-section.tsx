@@ -10,7 +10,7 @@ const projects = [
     subtitle: 'Workflow Engine',
     icon: Zap,
     description: 'Push logic to database. Define workflows as JSON configs. PostgreSQL handles execution.',
-    href: '/metaflow',
+    href: '/metaflow/ontology',
     isExternal: false,
     features: [
       'JSON-based workflow configuration',

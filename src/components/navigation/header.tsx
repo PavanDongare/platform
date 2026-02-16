@@ -47,6 +47,7 @@ export function Header({ activeTab, setActiveTab }: HeaderProps) {
                 src="/pavan.png"
                 alt="Pavan Dongare"
                 fill
+                sizes="48px"
                 className="object-cover object-top"
               />
             </div>

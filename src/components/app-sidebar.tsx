@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signout } from '@/app/auth/actions'
@@ -20,6 +20,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
+import { createClient } from '@/lib/supabase/client'
 
 const apps = [
   { name: 'Portfolio', href: '/', icon: Briefcase },
@@ -29,11 +30,14 @@ const apps = [
   { name: 'Metaflow', href: '/metaflow', icon: GitBranch },
 ]
 
-interface AppSidebarProps {
-  email?: string | null
-}
+export function AppSidebar() {
+  const [email, setEmail] = useState<string | null>(null)
 
-export function AppSidebar({ email }: AppSidebarProps) {
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data: { user } }) => {
+      setEmail(user?.email ?? null)
+    })
+  }, [])
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isSheetOpen, setIsSheetOpen] = useState(false)
   const pathname = usePathname()

@@ -38,6 +38,12 @@ const contactLinks = [
 
 export function MobileMenu({ activeTab, onTabChange, onClose }: MobileMenuProps) {
   const openCalendly = () => {
+    if (!document.querySelector('link[href*="calendly"]')) {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = 'https://assets.calendly.com/assets/external/widget.css'
+      document.head.appendChild(link)
+    }
     if (window.Calendly) {
       window.Calendly.initPopupWidget({
         url: 'https://calendly.com/pavan-dongare/intro'

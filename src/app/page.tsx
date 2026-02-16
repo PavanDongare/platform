@@ -37,6 +37,7 @@ export default function PortfolioPage() {
                   src="/pavan.png"
                   alt="Pavan Dongare"
                   fill
+                  sizes="(max-width: 768px) 192px, (max-width: 1024px) 224px, 256px"
                   className="object-cover object-top"
                   priority
                 />
@@ -54,7 +55,6 @@ export default function PortfolioPage() {
       {activeTab === 'experience' && <ExperienceSection />}
 
       {activeTab === 'projects' && <ProjectsSection />}
-
 
       {/* Footer */}
       <footer className="py-8 px-8 md:px-16 lg:px-24 border-t border-zinc-100">
