@@ -1,7 +1,21 @@
 'use client'
 
 import Link from 'next/link'
-import { Zap, Target, FileText, PenTool, Check, Github } from 'lucide-react'
+import {
+  Zap,
+  Target,
+  FileText,
+  PenTool,
+  Check,
+  Github,
+  TerminalSquare,
+  BarChart3,
+  NotebookText,
+  SlidersHorizontal,
+  Timer,
+  House,
+  Users,
+} from 'lucide-react'
 
 const projects = [
   {
@@ -35,6 +49,36 @@ const projects = [
     githubUrl: 'https://github.com/PavanDongare/ai-ready-app',
   },
   {
+    id: 'web-ssh-gateway',
+    title: 'Web SSH Gateway',
+    subtitle: 'Browser Terminal',
+    icon: TerminalSquare,
+    description: 'Run SSH sessions in the browser with real-time terminal streaming and voice input support.',
+    href: 'https://github.com/PavanDongare/web-ssh-gateway',
+    isExternal: true,
+    features: [
+      'WebSocket-based live terminal transport',
+      'Voice-to-terminal command support',
+      'Next.js + TypeScript gateway architecture'
+    ],
+    githubUrl: 'https://github.com/PavanDongare/web-ssh-gateway',
+  },
+  {
+    id: 'services-info',
+    title: 'Services Info',
+    subtitle: 'Analytics Dashboard',
+    icon: BarChart3,
+    description: 'Service intelligence dashboard with visual analytics, regional data views, and privacy-law insights.',
+    href: 'https://services-info.vercel.app',
+    isExternal: true,
+    features: [
+      'Recharts-powered analytics visualizations',
+      'Country-specific service intelligence',
+      'Supabase-backed data pipeline'
+    ],
+    githubUrl: 'https://github.com/PavanDongare/services-info',
+  },
+  {
     id: 'dms',
     title: 'Document Intelligence',
     subtitle: 'AI-Powered DMS',
@@ -64,15 +108,105 @@ const projects = [
     ],
     githubUrl: null,
   },
+  {
+    id: 'classic-onenote',
+    title: 'Classic OneNote',
+    subtitle: 'Retro Productivity UI',
+    icon: NotebookText,
+    description: 'A OneNote 2010-inspired notes app rebuilt with modern React architecture and persistent data.',
+    href: 'https://github.com/PavanDongare/classic-onenote',
+    isExternal: true,
+    features: [
+      'Notebook > Section > Page hierarchy',
+      'Classic desktop-inspired navigation model',
+      'Next.js + Supabase implementation'
+    ],
+    githubUrl: 'https://github.com/PavanDongare/classic-onenote',
+  },
+  {
+    id: 'configcraft-ui',
+    title: 'ConfigCraft UI',
+    subtitle: 'Design System Demo',
+    icon: SlidersHorizontal,
+    description: 'Component-rich configuration wizard and UI system built for rapid product setup workflows.',
+    href: 'https://github.com/PavanDongare/configcraft-ui',
+    isExternal: true,
+    features: [
+      'Step-based configuration wizard',
+      'shadcn/ui + Radix component patterns',
+      'Form and chart-heavy admin UX'
+    ],
+    githubUrl: 'https://github.com/PavanDongare/configcraft-ui',
+  },
+  {
+    id: 'wip-workbench',
+    title: 'WIP Workbench',
+    subtitle: 'Project Tracking',
+    icon: FileText,
+    description: 'Work management workspace for timelines, media, and collaboration-style task context.',
+    href: 'https://wip-pavan.vercel.app',
+    isExternal: true,
+    features: [
+      'Timeline and activity-oriented planning',
+      'Chat-style interaction patterns',
+      'Next.js + Supabase stack'
+    ],
+    githubUrl: 'https://github.com/PavanDongare/wip',
+  },
+  {
+    id: 'timer-app',
+    title: 'Timer App',
+    subtitle: 'React Native Focus',
+    icon: Timer,
+    description: 'Cross-platform focus timer built with Expo, native animation flows, and synced productivity data.',
+    href: 'https://github.com/PavanDongare/timer-app',
+    isExternal: true,
+    features: [
+      'React Native + Expo foundation',
+      'Native-feeling animations and interactions',
+      'Supabase sync for persistence'
+    ],
+    githubUrl: 'https://github.com/PavanDongare/timer-app',
+  },
+  {
+    id: 'onetouchweb',
+    title: 'OneTouchWeb',
+    subtitle: 'Home Automation',
+    icon: House,
+    description: 'Early large-scale home automation platform with backend APIs and device control workflows.',
+    href: 'https://github.com/PavanDongare/OneTouchWeb',
+    isExternal: true,
+    features: [
+      'IoT-style device control endpoints',
+      'Backend-integrated web dashboard',
+      'Production-style automation workflows'
+    ],
+    githubUrl: 'https://github.com/PavanDongare/OneTouchWeb',
+  },
+  {
+    id: 'mern-network',
+    title: 'MERN Network',
+    subtitle: 'Developer Community',
+    icon: Users,
+    description: 'Full-stack developer social platform built on MongoDB, Express, React, and Node.',
+    href: 'https://github.com/PavanDongare/mern',
+    isExternal: true,
+    features: [
+      'JWT auth and profile management',
+      'Redux-driven app state',
+      'End-to-end MERN architecture'
+    ],
+    githubUrl: 'https://github.com/PavanDongare/mern',
+  },
 ]
 
 export function ProjectsSection() {
   return (
     <section className="py-20 px-8 md:px-16 lg:px-24 border-b border-zinc-100">
-      <div className="max-w-6xl">
+      <div className="max-w-6xl mx-auto">
         <p className="text-zinc-400 text-xs uppercase tracking-widest mb-12">Selected Work</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] xl:grid-cols-3 gap-6">
           {projects.map((project) => {
             const IconComponent = project.icon
             const isExternalLink = project.isExternal || project.href.startsWith('http')
