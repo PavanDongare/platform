@@ -1,38 +1,44 @@
-import Anthropic from '@anthropic-ai/sdk'
+import type { OpenRouterTool } from '@/lib/openrouter'
 
-export const TOOLS: Anthropic.Tool[] = [
+export const TOOLS: OpenRouterTool[] = [
   {
-    name: 'update_section',
-    description: 'move documents to different sections',
-    input_schema: {
-      type: 'object' as const,
-      properties: {
-        doc_ids: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'Array of document UUIDs to move',
+    type: 'function',
+    function: {
+      name: 'update_section',
+      description: 'move documents to different sections',
+      parameters: {
+        type: 'object',
+        properties: {
+          doc_ids: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Array of document UUIDs to move',
+          },
+          new_section_name: {
+            type: 'string',
+            description: 'Name of the section to move documents to',
+          },
         },
-        new_section_name: {
-          type: 'string',
-          description: 'Name of the section to move documents to',
-        },
+        required: ['doc_ids', 'new_section_name'],
       },
-      required: ['doc_ids', 'new_section_name'],
     },
   },
   {
-    name: 'delete_documents',
-    description: 'delete documents',
-    input_schema: {
-      type: 'object' as const,
-      properties: {
-        doc_ids: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'Array of document UUIDs to delete',
+    type: 'function',
+    function: {
+      name: 'delete_documents',
+      description: 'delete documents',
+      parameters: {
+        type: 'object',
+        properties: {
+          doc_ids: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Array of document UUIDs to delete',
+          },
         },
+        required: ['doc_ids'],
       },
-      required: ['doc_ids'],
     },
   },
 ]

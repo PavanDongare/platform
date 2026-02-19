@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Loader2, Zap, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useActionTypes } from '../lib/hooks';
 
 export default function ActionsPage() {
@@ -59,29 +59,38 @@ export default function ActionsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {actionTypes.map((action) => (
-            <Link key={action.id} href={`/metaflow/actions/${action.id}`}>
-              <Card className="cursor-pointer hover:border-primary transition-colors h-full">
-                <CardHeader>
-                  <CardTitle>{action.displayName}</CardTitle>
-                  <CardDescription>
-                    {action.config.executionType === 'declarative' ? 'Declarative' : 'Function-backed'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    {action.config.parameters?.length || 0} parameter{(action.config.parameters?.length || 0) !== 1 ? 's' : ''}
-                  </p>
-                  {action.config.description && (
-                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                      {action.config.description}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+        <div className="border rounded-lg divide-y bg-card">
+          {actionTypes
+            .slice()
+            .sort((a, b) => a.displayName.localeCompare(b.displayName))
+            .map((action) => {
+              const paramCount = action.config.parameters?.length || 0;
+              const ruleCount = action.config.rules?.length || 0;
+              const hasCriteria = (action.config.submissionCriteria?.length || 0) > 0;
+
+              return (
+                <Link
+                  key={action.id}
+                  href={`/metaflow/actions/${action.id}`}
+                  className="block px-4 py-3 hover:bg-muted/30 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-medium">{action.displayName}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {action.config.executionType === 'declarative' ? 'Declarative' : 'Function-backed'} • {paramCount} params • {ruleCount} rules • {hasCriteria ? 'has criteria' : 'no criteria'}
+                      </p>
+                      {action.config.description && (
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                          {action.config.description}
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-xs text-muted-foreground shrink-0">Open</span>
+                  </div>
+                </Link>
+              );
+            })}
         </div>
       )}
     </div>

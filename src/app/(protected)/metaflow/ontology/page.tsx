@@ -1,10 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { Plus, Settings, Database, ArrowRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useObjectTypes } from '../lib/hooks';
 
 export default function OntologyPage() {
@@ -61,7 +60,7 @@ export default function OntologyPage() {
         </div>
       </div>
 
-      {/* Object Types Grid */}
+      {/* Object Types List */}
       {objectTypes.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
@@ -79,43 +78,54 @@ export default function OntologyPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {objectTypes.map((type) => {
-            const propertyCount = Object.keys(type.config.properties || {}).length;
-            return (
-              <Card key={type.id} className="hover:border-primary/50 transition-colors">
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg">{type.displayName}</CardTitle>
-                      <CardDescription>
-                        {propertyCount} {propertyCount === 1 ? 'property' : 'properties'}
-                      </CardDescription>
+        <div className="border rounded-lg divide-y bg-card">
+          {objectTypes
+            .slice()
+            .sort((a, b) => a.displayName.localeCompare(b.displayName))
+            .map((type) => {
+              const props = Object.values(type.config.properties || {});
+              const propertyCount = props.length;
+              const requiredCount = props.filter((p) => p.required).length;
+              const referenceCount = props.filter((p) => p.type === 'object-reference').length;
+              const picklistCount = props.filter((p) => p.picklistConfig).length;
+
+              return (
+                <div
+                  key={type.id}
+                  className="px-4 py-3 hover:bg-muted/30 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="font-medium">{type.displayName}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {propertyCount} properties, {requiredCount} required, {referenceCount} references, {picklistCount} picklists
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1 font-mono truncate">
+                        {type.id}
+                      </p>
                     </div>
-                    <Link href={`/metaflow/ontology/${type.id}`}>
-                      <Button variant="ghost" size="icon">
-                        <Settings className="w-4 h-4" />
-                      </Button>
-                    </Link>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Link href={`/metaflow/ontology/${type.id}`}>
+                        <Button variant="ghost" size="icon" title="Configure object type">
+                          <Settings className="w-4 h-4" />
+                        </Button>
+                      </Link>
+                      <Link href={`/metaflow/ontology/${type.id}/data`}>
+                        <Button variant="outline" size="sm">
+                          Data
+                        </Button>
+                      </Link>
+                      <Link href={`/metaflow/workspace/${type.id}`}>
+                        <Button variant="outline" size="sm">
+                          Workspace
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex gap-2">
-                    <Link href={`/metaflow/ontology/${type.id}/data`} className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full">
-                        View Data
-                      </Button>
-                    </Link>
-                    <Link href={`/metaflow/workspace/${type.id}`} className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full">
-                        Workspace
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+                </div>
+              );
+            })}
         </div>
       )}
     </div>

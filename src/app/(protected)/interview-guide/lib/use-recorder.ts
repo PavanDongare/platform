@@ -47,13 +47,26 @@ export function useRecorder(options: UseRecorderOptions = {}): UseRecorderReturn
   onChunkRef.current = onChunk
   onErrorRef.current = onError
 
+  const pickRecorderMimeType = useCallback((): string | undefined => {
+    if (typeof MediaRecorder === 'undefined' || typeof MediaRecorder.isTypeSupported !== 'function') {
+      return undefined
+    }
+    const candidates = [
+      'audio/webm;codecs=opus',
+      'audio/webm',
+      'audio/mp4',
+    ]
+    return candidates.find((type) => MediaRecorder.isTypeSupported(type))
+  }, [])
+
   // Start a new MediaRecorder (called when speech begins)
   const startRecording = useCallback(() => {
     if (!streamRef.current || mediaRecorderRef.current) return
 
-    const mediaRecorder = new MediaRecorder(streamRef.current, {
-      mimeType: 'audio/webm',
-    })
+    const mimeType = pickRecorderMimeType()
+    const mediaRecorder = mimeType
+      ? new MediaRecorder(streamRef.current, { mimeType })
+      : new MediaRecorder(streamRef.current)
 
     chunksRef.current = []
 
@@ -65,7 +78,7 @@ export function useRecorder(options: UseRecorderOptions = {}): UseRecorderReturn
 
     mediaRecorder.onstop = () => {
       if (chunksRef.current.length > 0) {
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
+        const blob = new Blob(chunksRef.current, { type: mediaRecorder.mimeType || 'audio/webm' })
         onChunkRef.current?.(blob)
       }
       chunksRef.current = []
@@ -79,7 +92,7 @@ export function useRecorder(options: UseRecorderOptions = {}): UseRecorderReturn
 
     mediaRecorderRef.current = mediaRecorder
     mediaRecorder.start(100)
-  }, [])
+  }, [pickRecorderMimeType])
 
   // Stop current MediaRecorder (called when silence detected)
   const stopRecording = useCallback(() => {

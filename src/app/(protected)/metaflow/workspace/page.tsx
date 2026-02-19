@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Database, Loader2 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useObjectTypes } from '../lib/hooks';
 
 export default function WorkspacePage() {
@@ -47,19 +47,45 @@ export default function WorkspacePage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {regularTypes.map((type) => (
-            <Link key={type.id} href={`/metaflow/workspace/${type.id}`}>
-              <Card className="hover:border-primary/50 transition-colors cursor-pointer h-full">
-                <CardHeader>
-                  <CardTitle>{type.displayName}</CardTitle>
-                  <CardDescription>
-                    {Object.keys(type.config.properties || {}).length} properties
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
-          ))}
+        <div className="border rounded-lg divide-y bg-card">
+          {regularTypes
+            .slice()
+            .sort((a, b) => a.displayName.localeCompare(b.displayName))
+            .map((type) => {
+              const props = Object.keys(type.config.properties || {});
+              const statusProps = Object.entries(type.config.properties || {}).filter(
+                ([, p]) => p.type === 'string' && !!p.picklistConfig
+              );
+
+              return (
+                <Link
+                  key={type.id}
+                  href={`/metaflow/workspace/${type.id}`}
+                  className="block px-4 py-3 hover:bg-muted/30 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-medium">{type.displayName}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {props.length} properties
+                        {type.config.titleKey ? `, title: ${type.config.titleKey}` : ''}
+                        {statusProps.length ? `, pipeline-ready` : ''}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {statusProps.length
+                          ? `State field${statusProps.length > 1 ? 's' : ''}: ${statusProps
+                              .map(([k]) => k)
+                              .join(', ')}`
+                          : 'No state picklist fields'}
+                      </p>
+                    </div>
+                    <span className="text-xs text-muted-foreground shrink-0">
+                      Open
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
         </div>
       )}
     </div>

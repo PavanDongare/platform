@@ -166,7 +166,49 @@ export async function getAvailableActionsForObject(
     p_tenant_id: tenantId,
   });
 
-  if (error) throw error;
+  if (error) {
+    // Fallback for broken/legacy DB RPCs: compute a minimal availability list client-side.
+    // This keeps workspace actions usable while DB functions are repaired.
+    const [objectRes, actionRes] = await Promise.all([
+      supabase
+        .from('objects')
+        .select('object_type_id, data')
+        .eq('id', objectId)
+        .eq('tenant_id', tenantId)
+        .single(),
+      supabase
+        .from('action_types')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .order('display_name', { ascending: true }),
+    ]);
+
+    if (objectRes.error) throw objectRes.error;
+    if (actionRes.error) throw actionRes.error;
+
+    const objectTypeId = objectRes.data.object_type_id as string;
+    const objectData = (objectRes.data.data || {}) as Record<string, unknown>;
+    const actions = (actionRes.data || []).map(mapActionType);
+
+    const fallback = actions
+      .filter((action) => referencesObjectType(action.config, objectTypeId))
+      .map((action) => {
+        const criteriaPassed = evaluateSimpleCriteriaForObject(action.config, objectTypeId, objectData);
+        return {
+          id: action.id,
+          displayName: action.displayName,
+          executionType: action.config.executionType,
+          parameters: action.config.parameters,
+          description: action.config.description,
+          classification: criteriaPassed ? 'recommended' : 'other',
+          criteriaPassed,
+        } satisfies ActionListItem;
+      })
+      .filter((a) => a.criteriaPassed)
+      .sort((a, b) => a.displayName.localeCompare(b.displayName));
+
+    return fallback;
+  }
 
   return (data || []).map((row: Record<string, unknown>) => ({
     id: row.id as string,
@@ -178,4 +220,53 @@ export async function getAvailableActionsForObject(
     criteriaPassed: row.criteria_passed as boolean,
     failureReason: row.failure_reason as string | undefined,
   }));
+}
+
+function referencesObjectType(config: ActionTypeConfig, objectTypeId: string): boolean {
+  return (config.parameters || []).some(
+    (param) => param.type === 'object-reference' && param.objectTypeId === objectTypeId
+  );
+}
+
+function evaluateSimpleCriteriaForObject(
+  config: ActionTypeConfig,
+  objectTypeId: string,
+  objectData: Record<string, unknown>
+): boolean {
+  const criteria = config.submissionCriteria as unknown;
+  const first = Array.isArray(criteria) ? criteria[0] : criteria;
+  if (!first || typeof first !== 'object') return true;
+
+  const criterion = first as Record<string, unknown>;
+  if (criterion.type !== 'comparison') return true;
+
+  const left = criterion.left as Record<string, unknown> | undefined;
+  const right = criterion.right as Record<string, unknown> | undefined;
+  const operator = criterion.operator as string | undefined;
+  if (!left || !right || !operator) return true;
+  if (left.type !== 'property' || right.type !== 'static') return true;
+
+  const path = left.path as Record<string, unknown> | undefined;
+  if (!path) return true;
+  const propertyKey = path.terminalPropertyKey as string | undefined;
+  const baseParameterName = path.baseParameterName as string | undefined;
+  if (!propertyKey || !baseParameterName) return true;
+
+  const objectParam = (config.parameters || []).find(
+    (p) => p.type === 'object-reference' && p.objectTypeId === objectTypeId
+  );
+  if (!objectParam || objectParam.name !== baseParameterName) return true;
+
+  const actual = objectData[propertyKey];
+  const expected = right.value;
+  switch (operator) {
+    case '=':
+    case 'equals':
+      return actual === expected;
+    case '!=':
+    case 'not_equals':
+      return actual !== expected;
+    default:
+      return true;
+  }
 }

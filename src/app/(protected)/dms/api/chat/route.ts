@@ -1,13 +1,20 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import Anthropic from '@anthropic-ai/sdk'
 import { TOOLS } from '../../lib/tools'
 import { findRelevantDocs } from '../../lib/search'
 import { getUserContext } from '@/lib/auth/get-user-context'
+import { extractOpenRouterText, getFreeModel, openRouterChat } from '@/lib/openrouter'
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-})
+const MODEL = getFreeModel(process.env.OPENROUTER_DMS_MODEL, 'qwen/qwen3-coder:free')
+
+type DmsDoc = {
+  id: string
+  document_type: string | null
+  summary: string | null
+  extracted_data: unknown
+  section_id: string | null
+  sections: { name: string | null } | null
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,22 +39,23 @@ export async function POST(request: NextRequest) {
     }
 
     // Filter documents by tenant
-    const { data: docs } = await supabase
+    const { data: docsData } = await supabase
       .from('documents')
       .select('id, document_type, summary, extracted_data, section_id, sections(name)')
       .eq('tenant_id', ctx.tenantId)
       .order('created_at', { ascending: false })
+    const docs: DmsDoc[] = (docsData ?? []) as DmsDoc[]
 
     const relevantDocs = findRelevantDocs(message, docs || [], 2)
 
     const docContext = docs
-      ?.map((d: any) => {
+      .map((d) => {
         const section = d.sections?.name || 'Uncategorized'
         return `${section}: ${d.document_type} (ID: ${d.id})${d.summary ? ` - ${d.summary}` : ''}`
       })
       .join('\n')
 
-    const sectionGroups = docs?.reduce((acc: any, doc: any) => {
+    const sectionGroups = docs.reduce<Record<string, number>>((acc, doc) => {
       const section = doc.sections?.name || 'Uncategorized'
       acc[section] = (acc[section] || 0) + 1
       return acc
@@ -61,7 +69,7 @@ export async function POST(request: NextRequest) {
       relevantDocs.length > 0
         ? `\nRelevant document details:\n${relevantDocs
             .map(
-              (d: any) =>
+              (d: DmsDoc) =>
                 `- ${d.document_type}: ${JSON.stringify(d.extracted_data, null, 2)}`
             )
             .join('\n')}`
@@ -79,22 +87,21 @@ When user asks to move/merge/delete documents:
 Available documents:
 ${docContext || 'No documents uploaded yet'}${relevantContext}`
 
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5-20250929',
+    const response = await openRouterChat({
+      model: MODEL,
       max_tokens: 2048,
-      system: systemPrompt,
+      temperature: 0.2,
       tools: TOOLS,
+      tool_choice: 'auto',
       messages: [
-        {
-          role: 'user',
-          content: message,
-        },
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: message },
       ],
     })
 
     // Execute tool with tenant context
     const tenantId = ctx.tenantId
-    async function executeTool(name: string, input: any): Promise<string> {
+    async function executeTool(name: string, input: Record<string, unknown>): Promise<string> {
       const { data, error } = await supabase.rpc(name, {
         ...input,
         p_tenant_id: tenantId
@@ -108,27 +115,31 @@ ${docContext || 'No documents uploaded yet'}${relevantContext}`
       return data?.[0]?.message || 'Action completed'
     }
 
-    if (response.stop_reason === 'tool_use') {
-      const toolUseBlock = response.content.find(
-        (block): block is Anthropic.ToolUseBlock => block.type === 'tool_use'
-      )
+    const choice = response?.choices?.[0]
+    const toolCall = choice?.message?.tool_calls?.[0]
 
-      if (toolUseBlock) {
-        const toolResult = await executeTool(toolUseBlock.name, toolUseBlock.input)
-        return new Response(
-          JSON.stringify({ message: toolResult }),
-          { headers: { 'Content-Type': 'application/json' } }
-        )
+    if (toolCall?.function?.name) {
+      let input: Record<string, unknown> = {}
+      try {
+        input = toolCall.function.arguments
+          ? JSON.parse(toolCall.function.arguments)
+          : {}
+      } catch {
+        input = {}
       }
+
+      const toolResult = await executeTool(toolCall.function.name, input)
+      return new Response(
+        JSON.stringify({ message: toolResult }),
+        { headers: { 'Content-Type': 'application/json' } }
+      )
     }
 
-    const textBlock = response.content.find(
-      (block): block is Anthropic.TextBlock => block.type === 'text'
-    )
+    const assistantText = extractOpenRouterText(choice?.message?.content)
 
     return new Response(
       JSON.stringify({
-        message: textBlock?.text || "I'm here to help with your documents!",
+        message: assistantText || "I'm here to help with your documents!",
       }),
       {
         headers: { 'Content-Type': 'application/json' },

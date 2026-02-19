@@ -809,7 +809,7 @@ DECLARE
   v_state_property TEXT;
 BEGIN
   -- Get primary state property from process
-  SELECT tracked_picklists[1]::TEXT INTO v_state_property
+  SELECT (tracked_picklists->0)::TEXT INTO v_state_property
   FROM metaflow.process_layouts
   WHERE p_object_type_id = ANY(object_type_ids) AND tenant_id = p_tenant_id
   LIMIT 1;
@@ -1230,9 +1230,7 @@ BEGIN
   SELECT cs.current_state, cs.state_property INTO v_current_state, v_state_property
   FROM metaflow.get_object_current_state(v_object_type_id, v_object_data, p_tenant_id) cs;
 
-  -- Return actions relevant to this object type with safe criteria evaluation.
-  -- NOTE: This intentionally avoids deep dynamic-path evaluation here to keep
-  -- runtime stable for malformed/legacy criteria payloads.
+  -- Return actions relevant to this object type, filtered and prioritized
   RETURN QUERY
   SELECT
     a.id,
@@ -1240,69 +1238,12 @@ BEGIN
     a.config->>'executionType' AS execution_type,
     a.config->'parameters' AS parameters,
     COALESCE(a.config->>'description', '') AS description,
-    CASE
-      WHEN COALESCE(jsonb_array_length(COALESCE(a.config->'submissionCriteria', '[]'::JSONB)), 0) = 0 THEN 'independent'
-      WHEN (
-        (a.config->'submissionCriteria'->0->>'type' = 'comparison')
-        AND (a.config->'submissionCriteria'->0->'left'->>'type' = 'property')
-      ) THEN
-        CASE
-          WHEN COALESCE(v_object_data->>(a.config->'submissionCriteria'->0->'left'->'path'->>'terminalPropertyKey'), '') =
-               COALESCE(a.config->'submissionCriteria'->0->'right'->>'value', '')
-          THEN 'recommended'
-          ELSE 'conditional'
-        END
-      ELSE 'conditional'
-    END AS classification,
-    CASE
-      WHEN COALESCE(jsonb_array_length(COALESCE(a.config->'submissionCriteria', '[]'::JSONB)), 0) = 0 THEN TRUE
-      WHEN (
-        (a.config->'submissionCriteria'->0->>'type' = 'comparison')
-        AND (a.config->'submissionCriteria'->0->'left'->>'type' = 'property')
-        AND (a.config->'submissionCriteria'->0->>'operator' IN ('=', '!=', 'equals', 'not_equals'))
-      ) THEN
-        CASE
-          WHEN a.config->'submissionCriteria'->0->>'operator' IN ('=', 'equals') THEN
-            COALESCE(v_object_data->>(a.config->'submissionCriteria'->0->'left'->'path'->>'terminalPropertyKey'), '') =
-            COALESCE(a.config->'submissionCriteria'->0->'right'->>'value', '')
-          ELSE
-            COALESCE(v_object_data->>(a.config->'submissionCriteria'->0->'left'->'path'->>'terminalPropertyKey'), '') !=
-            COALESCE(a.config->'submissionCriteria'->0->'right'->>'value', '')
-        END
-      ELSE TRUE
-    END AS criteria_passed,
-    (
-      v_current_state IS NOT NULL
-      AND COALESCE(a.config->'submissionCriteria'->0->'right'->>'value', '') = v_current_state
-    ) AS is_recommended,
+    metaflow.classify_action_for_object(a.id, v_object_type_id, v_object_data, v_current_state, p_tenant_id) AS classification,
+    metaflow.evaluate_action_criteria(a.config->'submissionCriteria', p_object_id, p_tenant_id) AS criteria_passed,
+    metaflow.is_action_recommended(a.id, v_current_state, p_tenant_id) AS is_recommended,
     metaflow.calculate_action_priority(
-      CASE
-        WHEN COALESCE(jsonb_array_length(COALESCE(a.config->'submissionCriteria', '[]'::JSONB)), 0) = 0 THEN 'independent'
-        WHEN (
-          (a.config->'submissionCriteria'->0->>'type' = 'comparison')
-          AND (a.config->'submissionCriteria'->0->'left'->>'type' = 'property')
-          AND COALESCE(v_object_data->>(a.config->'submissionCriteria'->0->'left'->'path'->>'terminalPropertyKey'), '') =
-              COALESCE(a.config->'submissionCriteria'->0->'right'->>'value', '')
-        ) THEN 'recommended'
-        ELSE 'conditional'
-      END,
-      CASE
-        WHEN COALESCE(jsonb_array_length(COALESCE(a.config->'submissionCriteria', '[]'::JSONB)), 0) = 0 THEN TRUE
-        WHEN (
-          (a.config->'submissionCriteria'->0->>'type' = 'comparison')
-          AND (a.config->'submissionCriteria'->0->'left'->>'type' = 'property')
-          AND (a.config->'submissionCriteria'->0->>'operator' IN ('=', 'equals', '!=', 'not_equals'))
-        ) THEN
-          CASE
-            WHEN a.config->'submissionCriteria'->0->>'operator' IN ('=', 'equals') THEN
-              COALESCE(v_object_data->>(a.config->'submissionCriteria'->0->'left'->'path'->>'terminalPropertyKey'), '') =
-              COALESCE(a.config->'submissionCriteria'->0->'right'->>'value', '')
-            ELSE
-              COALESCE(v_object_data->>(a.config->'submissionCriteria'->0->'left'->'path'->>'terminalPropertyKey'), '') !=
-              COALESCE(a.config->'submissionCriteria'->0->'right'->>'value', '')
-          END
-        ELSE TRUE
-      END
+      metaflow.classify_action_for_object(a.id, v_object_type_id, v_object_data, v_current_state, p_tenant_id),
+      metaflow.evaluate_action_criteria(a.config->'submissionCriteria', p_object_id, p_tenant_id)
     ) AS priority_score
   FROM metaflow.action_types a
   WHERE a.tenant_id = p_tenant_id
@@ -1349,7 +1290,10 @@ BEGIN
           )
       )
     )
-  ORDER BY priority_score DESC, a.display_name;
+  ORDER BY metaflow.calculate_action_priority(
+    metaflow.classify_action_for_object(a.id, v_object_type_id, v_object_data, v_current_state, p_tenant_id),
+    metaflow.evaluate_action_criteria(a.config->'submissionCriteria', p_object_id, p_tenant_id)
+  ) DESC, a.display_name;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 

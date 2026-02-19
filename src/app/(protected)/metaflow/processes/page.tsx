@@ -34,6 +34,7 @@ export default function ProcessesPage() {
   const [newProcessName, setNewProcessName] = useState('');
   const [selectedObjectTypeId, setSelectedObjectTypeId] = useState<string>('');
   const [creating, setCreating] = useState(false);
+  const objectTypeNameById = new Map(objectTypes.map((t) => [t.id, t.displayName]));
 
   const handleCreate = async () => {
     if (!newProcessName.trim() || !selectedObjectTypeId) return;
@@ -103,39 +104,52 @@ export default function ProcessesPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {layouts.map((layout) => (
-            <Card
-              key={layout.id}
-              onClick={() => router.push(`/metaflow/processes/${layout.id}`)}
-              className="cursor-pointer hover:border-primary transition-colors group"
-            >
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-1">
-                      {layout.processName}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {layout.objectTypeIds.length} object type
-                      {layout.objectTypeIds.length !== 1 ? 's' : ''}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Updated {new Date(layout.updatedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={(e) => handleDelete(e, layout.processName)}
+        <div className="border rounded-lg divide-y bg-card">
+          {layouts
+            .slice()
+            .sort((a, b) => a.processName.localeCompare(b.processName))
+            .map((layout) => (
+              <div
+                key={layout.id}
+                className="px-4 py-3 hover:bg-muted/30 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <button
+                    type="button"
+                    className="text-left min-w-0 flex-1"
+                    onClick={() => router.push(`/metaflow/processes/${layout.id}`)}
                   >
-                    <Trash2 className="w-4 h-4 text-destructive" />
-                  </Button>
+                    <p className="font-medium">{layout.processName}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {(layout.objectTypeIds || [])
+                        .map((id) => objectTypeNameById.get(id) || id)
+                        .join(', ')}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {(layout.trackedPicklists || []).length} tracked picklist{(layout.trackedPicklists || []).length !== 1 ? 's' : ''} • updated {new Date(layout.updatedAt).toLocaleDateString()}
+                    </p>
+                  </button>
+
+                  <div className="shrink-0 flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => router.push(`/metaflow/processes/${layout.id}`)}
+                    >
+                      Open
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => handleDelete(e, layout.processName)}
+                      title="Delete process"
+                    >
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              </div>
+            ))}
         </div>
       )}
 

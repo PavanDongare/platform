@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import Anthropic from '@anthropic-ai/sdk'
 import { getUserContext } from '@/lib/auth/get-user-context'
+import { extractOpenRouterText, getFreeModel, openRouterChat } from '@/lib/openrouter'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,9 +9,7 @@ const supabase = createClient(
   { db: { schema: 'dms' } }
 )
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-})
+const MODEL = getFreeModel(process.env.OPENROUTER_DMS_MODEL, 'openrouter/free')
 
 const EXTRACTION_PROMPT = `Analyze this document completely. Extract and return as JSON:
 {
@@ -42,49 +40,50 @@ export async function POST(request: NextRequest) {
     const mimeType = file.type || 'application/octet-stream'
     const isPdf = mimeType === 'application/pdf'
 
-    // Extract with Claude
+    // Extract with OpenRouter free model
     let extracted = { document_type: 'Document', summary: file.name, metadata: {} }
 
-    if (process.env.ANTHROPIC_API_KEY) {
+    if (process.env.OPENROUTER_API_KEY) {
       try {
-        const contentBlock = isPdf
-          ? {
-              type: 'document' as const,
-              source: {
-                type: 'base64' as const,
-                media_type: 'application/pdf' as const,
-                data: base64Data,
+        const multimodalContent = isPdf
+          ? [
+              {
+                type: 'text',
+                text: `${EXTRACTION_PROMPT}\n\nFile name: ${file.name}\nMime type: ${mimeType}\nNote: PDF content may not be directly parseable by this model; infer what you can from metadata.`,
               },
-            }
-          : {
-              type: 'image' as const,
-              source: {
-                type: 'base64' as const,
-                media_type: mimeType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
-                data: base64Data,
+            ]
+          : [
+              { type: 'text', text: EXTRACTION_PROMPT },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: `data:${mimeType};base64,${base64Data}`,
+                },
               },
-            }
+            ]
 
-        const response = await anthropic.messages.create({
-          model: 'claude-3-5-haiku-20241022',
+        const response = await openRouterChat({
+          model: MODEL,
           max_tokens: 1024,
+          temperature: 0.1,
           messages: [
             {
               role: 'user',
-              content: [contentBlock, { type: 'text', text: EXTRACTION_PROMPT }],
+              content: multimodalContent,
             },
           ],
         })
 
-        const textBlock = response.content.find((block) => block.type === 'text')
-        if (textBlock && textBlock.type === 'text') {
-          let jsonText = textBlock.text
+        const text = extractOpenRouterText(response?.choices?.[0]?.message?.content)
+
+        if (text) {
+          let jsonText = text
           const jsonMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)```/)
           if (jsonMatch) jsonText = jsonMatch[1]
           extracted = JSON.parse(jsonText.trim())
         }
       } catch (e) {
-        console.error('Claude extraction failed:', e)
+        console.error('OpenRouter extraction failed:', e)
       }
     }
 

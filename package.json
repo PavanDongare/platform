@@ -6,13 +6,21 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "metaflow:sample:sql": "node tools/metaflow-generator/convert-json-to-sql.mjs examples/metaflow/deal-pipeline.sample.json examples/metaflow/deal-pipeline.sample.sql",
+    "metaflow:demo:sql": "node tools/metaflow-generator/convert-json-to-sql.mjs examples/metaflow/deal-pipeline.demo.json examples/metaflow/deal-pipeline.demo.sql",
+    "metaflow:demo:apply": "node tools/metaflow-generator/apply-json-to-supabase.mjs examples/metaflow/deal-pipeline.demo.json",
+    "metaflow:demo:loop": "node tools/metaflow-generator/run-demo-loop.mjs",
+    "metaflow:agent": "node tools/metaflow-generator/agent/run-agent-loop.mjs",
+    "metaflow:default:export": "node tools/metaflow-generator/export-supabase-to-json.mjs 00000000-0000-0000-0000-000000000001 examples/metaflow/deal-pipeline.default.export.json \"Deal Pipeline\"",
+    "metaflow:default:sql": "node tools/metaflow-generator/convert-json-to-sql.mjs examples/metaflow/deal-pipeline.default.json examples/metaflow/deal-pipeline.default.sql",
+    "metaflow:default:apply": "node tools/metaflow-generator/apply-json-to-supabase.mjs examples/metaflow/deal-pipeline.default.json"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.71.2",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "@huggingface/transformers": "^3.8.1",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-collapsible": "^1.1.12",
     "@radix-ui/react-dialog": "^1.1.15",
