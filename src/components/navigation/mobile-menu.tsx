@@ -12,8 +12,8 @@ declare global {
 }
 
 interface MobileMenuProps {
-  activeTab: 'about' | 'experience' | 'projects'
-  onTabChange: (tab: 'about' | 'experience' | 'projects') => void
+  activeTab: 'about' | 'experience' | 'projects' | 'testimonials'
+  onTabChange: (tab: 'about' | 'experience' | 'projects' | 'testimonials') => void
   onClose: () => void
 }
 
@@ -21,6 +21,7 @@ const navLinks = [
   { label: 'About', tab: 'about' as const },
   { label: 'Experience', tab: 'experience' as const },
   { label: 'Projects', tab: 'projects' as const },
+  { label: 'Testimonials', tab: 'testimonials' as const },
 ]
 
 const contactLinks = [

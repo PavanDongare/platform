@@ -13,7 +13,7 @@ type DmsDoc = {
   summary: string | null
   extracted_data: unknown
   section_id: string | null
-  sections: { name: string | null } | null
+  sections: { name: string | null }[] | null
 }
 
 export async function POST(request: NextRequest) {
@@ -44,7 +44,10 @@ export async function POST(request: NextRequest) {
       .select('id, document_type, summary, extracted_data, section_id, sections(name)')
       .eq('tenant_id', ctx.tenantId)
       .order('created_at', { ascending: false })
-    const docs: DmsDoc[] = (docsData ?? []) as DmsDoc[]
+    const docs: any[] = (docsData ?? []).map(d => ({
+      ...d,
+      sections: Array.isArray(d.sections) ? d.sections[0] : d.sections
+    }))
 
     const relevantDocs = findRelevantDocs(message, docs || [], 2)
 

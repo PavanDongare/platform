@@ -10,11 +10,12 @@ const navLinks = [
   { label: 'About', tab: 'about' as const },
   { label: 'Experience', tab: 'experience' as const },
   { label: 'Projects', tab: 'projects' as const },
+  { label: 'Testimonials', tab: 'testimonials' as const },
 ]
 
 interface HeaderProps {
-  activeTab: 'about' | 'experience' | 'projects'
-  setActiveTab: (tab: 'about' | 'experience' | 'projects') => void
+  activeTab: 'about' | 'experience' | 'projects' | 'testimonials'
+  setActiveTab: (tab: 'about' | 'experience' | 'projects' | 'testimonials') => void
 }
 
 export function Header({ activeTab, setActiveTab }: HeaderProps) {
