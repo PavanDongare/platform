@@ -2,13 +2,22 @@
 > platform@0.1.0 start
 > next start -p 3000
 
-⨯ Failed to start server
-Error: listen EADDRINUSE: address already in use :::3000
-    at <unknown> (Error: listen EADDRINUSE: address already in use :::3000)
-    at new Promise (<anonymous>) {
-  code: 'EADDRINUSE',
-  errno: -48,
-  syscall: 'listen',
-  address: '::',
-  port: 3000
+▲ Next.js 16.1.1
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.39:3000
+
+✓ Starting...
+✓ Ready in 345ms
+Error: fetch failed
+    at context.fetch (/Users/pavandongare/Documents/platform/node_modules/next/dist/server/web/sandbox/context.js:321:60)
+    at /Users/pavandongare/Documents/platform/.next/server/edge/chunks/[root-of-the-server]__7b72f506._.js:36:41334
+    at sF (/Users/pavandongare/Documents/platform/.next/server/edge/chunks/[root-of-the-server]__7b72f506._.js:36:46301)
+    at sz (/Users/pavandongare/Documents/platform/.next/server/edge/chunks/[root-of-the-server]__7b72f506._.js:36:45829)
+    at /Users/pavandongare/Documents/platform/.next/server/edge/chunks/[root-of-the-server]__7b72f506._.js:49:14165
+    at nw._useSession (/Users/pavandongare/Documents/platform/.next/server/edge/chunks/[root-of-the-server]__7b72f506._.js:49:11704)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async nw._getUser (/Users/pavandongare/Documents/platform/.next/server/edge/chunks/[root-of-the-server]__7b72f506._.js:49:13996)
+    at async /Users/pavandongare/Documents/platform/.next/server/edge/chunks/[root-of-the-server]__7b72f506._.js:49:13790
+    at async /Users/pavandongare/Documents/platform/.next/server/edge/chunks/[root-of-the-server]__7b72f506._.js:49:10978 {
+  
 }
