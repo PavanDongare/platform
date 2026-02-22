@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { login } from '../actions'
+import { signIn } from '../actions'
 import {
   Card,
   CardContent,
@@ -16,9 +16,9 @@ import { DemoButton } from '@/components/demo-button'
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; message?: string }>
 }) {
-  const { error } = await searchParams
+  const { error, message } = await searchParams
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
@@ -26,7 +26,7 @@ export default async function LoginPage({
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Sign in</CardTitle>
           <CardDescription>
-            Welcome back to the platform
+            Enter your email to receive a magic link
           </CardDescription>
         </CardHeader>
 
@@ -34,6 +34,12 @@ export default async function LoginPage({
           {error && (
             <div className="mb-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
               {error}
+            </div>
+          )}
+
+          {message && (
+            <div className="mb-4 rounded-md bg-green-500/10 p-3 text-sm text-green-600 dark:text-green-400">
+              {message}
             </div>
           )}
 
@@ -49,18 +55,8 @@ export default async function LoginPage({
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                required
-              />
-            </div>
-
-            <Button formAction={login} className="w-full">
-              Sign in
+            <Button formAction={signIn} className="w-full">
+              Send Magic Link
             </Button>
           </form>
 
