@@ -10,7 +10,7 @@ const navLinks = [
   { label: 'About', tab: 'about' as const },
   { label: 'Experience', tab: 'experience' as const },
   { label: 'Projects', tab: 'projects' as const },
-  { label: 'Touch Only', tab: 'testimonials' as const },
+  { label: 'Recommendations', tab: 'testimonials' as const },
 ]
 
 interface HeaderProps {
