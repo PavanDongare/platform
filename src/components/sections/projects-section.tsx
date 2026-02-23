@@ -248,9 +248,13 @@ export function ProjectsSection() {
 
                     {/* CTA + GitHub (pushed to bottom) */}
                     <div className="flex items-center justify-between pt-4 border-t border-zinc-100 mt-auto">
-                      <span className="text-sm text-zinc-400 group-hover:text-zinc-900 transition-colors">
-                        {isExternalLink ? 'View live app →' : 'View live demo →'}
-                      </span>
+                      {isExternalLink && !project.href.includes('github.com') ? (
+                        <span className="text-sm text-zinc-400 group-hover:text-zinc-900 transition-colors">
+                          {project.isExternal ? 'View live app →' : 'View live demo →'}
+                        </span>
+                      ) : (
+                        <div />
+                      )}
 
                       {project.githubUrl && (
                         <button
