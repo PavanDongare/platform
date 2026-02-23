@@ -20,7 +20,7 @@ export default function PortfolioPage() {
       {/* Hero - Compact */}
       {activeTab === 'about' && (
       <section className="min-h-[40vh] flex flex-col justify-center px-8 md:px-16 lg:px-24 border-b border-zinc-100 pt-12">
-        <div className="max-w-5xl flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+        <div className="max-w-5xl mx-auto w-full flex flex-col md:flex-row md:items-center md:justify-between gap-8">
           <div className="flex-1 max-w-2xl">
             <p className="text-zinc-400 text-sm tracking-wide mb-4">Pavan Dongare</p>
             <h1 className="text-4xl md:text-5xl font-medium tracking-tight leading-[1.1] mb-4">

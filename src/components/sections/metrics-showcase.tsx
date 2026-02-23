@@ -9,7 +9,7 @@ export function MetricsShowcase() {
 
   return (
     <section className="py-8 px-8 md:px-16 lg:px-24 border-b border-zinc-100">
-      <div className="max-w-5xl">
+      <div className="max-w-5xl mx-auto w-full">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 md:gap-6">
           {metrics.map((metric: { value: string; label: string }) => (
             <div key={metric.label} className="text-center">
