@@ -54,7 +54,7 @@ const projects = [
     subtitle: 'Browser Terminal',
     icon: TerminalSquare,
     description: 'Run SSH sessions in the browser with real-time terminal streaming and voice input support.',
-    href: 'https://github.com/PavanDongare/web-ssh-gateway',
+    href: 'https://ssh.pavandongare.com/',
     isExternal: true,
     features: [
       'WebSocket-based live terminal transport',
@@ -174,7 +174,7 @@ const projects = [
     subtitle: 'Home Automation',
     icon: House,
     description: 'Early large-scale home automation platform with backend APIs and device control workflows.',
-    href: 'https://github.com/PavanDongare/OneTouchWeb',
+    href: 'https://one-touch-web.vercel.app',
     isExternal: true,
     features: [
       'IoT-style device control endpoints',
