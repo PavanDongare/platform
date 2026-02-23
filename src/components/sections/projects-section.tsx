@@ -109,21 +109,6 @@ const projects = [
     githubUrl: 'https://github.com/PavanDongare/onenote-app',
   },
   {
-    id: 'classic-onenote',
-    title: 'Classic OneNote',
-    subtitle: 'Retro Productivity UI',
-    icon: NotebookText,
-    description: 'A OneNote 2010-inspired notes app rebuilt with modern React architecture and persistent data.',
-    href: 'https://github.com/PavanDongare/classic-onenote',
-    isExternal: true,
-    features: [
-      'Notebook > Section > Page hierarchy',
-      'Classic desktop-inspired navigation model',
-      'Next.js + Supabase implementation'
-    ],
-    githubUrl: 'https://github.com/PavanDongare/classic-onenote',
-  },
-  {
     id: 'configcraft-ui',
     title: 'ConfigCraft UI',
     subtitle: 'Design System Demo',
