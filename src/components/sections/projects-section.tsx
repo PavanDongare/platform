@@ -34,19 +34,34 @@ const projects = [
     githubUrl: 'https://github.com/PavanDongare/metaflow-app',
   },
   {
-    id: 'interview-guide',
-    title: 'Interview Guide',
-    subtitle: 'Real-time Assistant',
-    icon: Target,
-    description: 'Real-time assistant with live transcription and dynamic concept cards using Whisper AI.',
-    href: 'https://interview-guide-app.vercel.app',
+    id: 'dms',
+    title: 'Document Intelligence',
+    subtitle: 'AI-Powered DMS',
+    icon: FileText,
+    description: 'Document Management System with AI-powered chat interface for interactive document analysis.',
+    href: 'https://dms-app-swart.vercel.app',
     isExternal: true,
     features: [
-      'Live speech-to-text transcription',
-      'AI-powered dynamic concept cards',
-      'Real-time interview gap analysis'
+      'Automatic metadata extraction',
+      'AI-powered categorization',
+      'Full-text semantic search'
     ],
-    githubUrl: 'https://github.com/PavanDongare/interview-guide-app',
+    githubUrl: 'https://github.com/PavanDongare/dms-app',
+  },
+  {
+    id: 'spatial-notes',
+    title: 'Spatial Notes',
+    subtitle: 'Canvas-Based Notes',
+    icon: PenTool,
+    description: 'Digital notebook application with hierarchical organization and infinite canvas workspace.',
+    href: 'https://onenote-app.vercel.app',
+    isExternal: true,
+    features: [
+      'Infinite canvas workspace',
+      'Drag-and-drop note organization',
+      'Multi-section notebook system'
+    ],
+    githubUrl: 'https://github.com/PavanDongare/onenote-app',
   },
   {
     id: 'web-ssh-gateway',
@@ -79,34 +94,19 @@ const projects = [
     githubUrl: 'https://github.com/PavanDongare/services-info',
   },
   {
-    id: 'dms',
-    title: 'Document Intelligence',
-    subtitle: 'AI-Powered DMS',
+    id: 'wip-workbench',
+    title: 'WIP Workbench',
+    subtitle: 'Project Tracking',
     icon: FileText,
-    description: 'Document Management System with AI-powered chat interface for interactive document analysis.',
-    href: 'https://dms-app-swart.vercel.app',
+    description: 'Work management workspace for timelines, media, and collaboration-style task context.',
+    href: 'https://wip-pavan.vercel.app',
     isExternal: true,
     features: [
-      'Automatic metadata extraction',
-      'AI-powered categorization',
-      'Full-text semantic search'
+      'Timeline and activity-oriented planning',
+      'Chat-style interaction patterns',
+      'Next.js + Supabase stack'
     ],
-    githubUrl: 'https://github.com/PavanDongare/dms-app',
-  },
-  {
-    id: 'spatial-notes',
-    title: 'Spatial Notes',
-    subtitle: 'Canvas-Based Notes',
-    icon: PenTool,
-    description: 'Digital notebook application with hierarchical organization and infinite canvas workspace.',
-    href: 'https://onenote-app.vercel.app',
-    isExternal: true,
-    features: [
-      'Infinite canvas workspace',
-      'Drag-and-drop note organization',
-      'Multi-section notebook system'
-    ],
-    githubUrl: 'https://github.com/PavanDongare/onenote-app',
+    githubUrl: 'https://github.com/PavanDongare/wip',
   },
   {
     id: 'configcraft-ui',
@@ -124,19 +124,19 @@ const projects = [
     githubUrl: 'https://github.com/PavanDongare/configcraft-ui',
   },
   {
-    id: 'wip-workbench',
-    title: 'WIP Workbench',
-    subtitle: 'Project Tracking',
-    icon: FileText,
-    description: 'Work management workspace for timelines, media, and collaboration-style task context.',
-    href: 'https://wip-pavan.vercel.app',
+    id: 'onetouchweb',
+    title: 'OneTouchWeb',
+    subtitle: 'Home Automation',
+    icon: House,
+    description: 'Early large-scale home automation platform with backend APIs and device control workflows.',
+    href: 'https://one-touch-web.vercel.app',
     isExternal: true,
     features: [
-      'Timeline and activity-oriented planning',
-      'Chat-style interaction patterns',
-      'Next.js + Supabase stack'
+      'IoT-style device control endpoints',
+      'Backend-integrated web dashboard',
+      'Production-style automation workflows'
     ],
-    githubUrl: 'https://github.com/PavanDongare/wip',
+    githubUrl: 'https://github.com/PavanDongare/OneTouchWeb',
   },
   {
     id: 'timer-app',
@@ -154,21 +154,6 @@ const projects = [
     githubUrl: 'https://github.com/PavanDongare/timer-app',
   },
   {
-    id: 'onetouchweb',
-    title: 'OneTouchWeb',
-    subtitle: 'Home Automation',
-    icon: House,
-    description: 'Early large-scale home automation platform with backend APIs and device control workflows.',
-    href: 'https://one-touch-web.vercel.app',
-    isExternal: true,
-    features: [
-      'IoT-style device control endpoints',
-      'Backend-integrated web dashboard',
-      'Production-style automation workflows'
-    ],
-    githubUrl: 'https://github.com/PavanDongare/OneTouchWeb',
-  },
-  {
     id: 'mern-network',
     title: 'MERN Network',
     subtitle: 'Developer Community',
@@ -182,6 +167,21 @@ const projects = [
       'End-to-end MERN architecture'
     ],
     githubUrl: 'https://github.com/PavanDongare/mern',
+  },
+  {
+    id: 'interview-guide',
+    title: 'Interview Guide',
+    subtitle: 'Real-time Assistant',
+    icon: Target,
+    description: 'Real-time assistant with live transcription and dynamic concept cards using Whisper AI.',
+    href: 'https://interview-guide-app.vercel.app',
+    isExternal: true,
+    features: [
+      'Live speech-to-text transcription',
+      'AI-powered dynamic concept cards',
+      'Real-time interview gap analysis'
+    ],
+    githubUrl: 'https://github.com/PavanDongare/interview-guide-app',
   },
 ]
 
