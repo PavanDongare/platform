@@ -1,0 +1,404 @@
+{
+  "version": 1,
+  "tenant": {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "name": "Default Tenant",
+    "slug": "default"
+  },
+  "app": {
+    "name": "Kanban App Generator",
+    "description": "A business process for managing the generation and deployment of Kanban applications"
+  },
+  "objectTypes": [
+    {
+      "symbolicId": "$client",
+      "displayName": "Client",
+      "config": {
+        "titleKey": "name",
+        "primaryKey": "id",
+        "properties": {
+          "name": {
+            "type": "string",
+            "required": true,
+            "displayName": "Client Name"
+          },
+          "contactEmail": {
+            "type": "string",
+            "required": true,
+            "displayName": "Contact Email"
+          }
+        }
+      }
+    },
+    {
+      "symbolicId": "$app_request",
+      "displayName": "App Generation Request",
+      "config": {
+        "titleKey": "appName",
+        "primaryKey": "id",
+        "properties": {
+          "appName": {
+            "type": "string",
+            "required": true,
+            "displayName": "App Name"
+          },
+          "description": {
+            "type": "string",
+            "required": false,
+            "displayName": "Description"
+          },
+          "status": {
+            "type": "string",
+            "required": true,
+            "displayName": "Status",
+            "picklistConfig": {
+              "options": [
+                "Discovery",
+                "Design",
+                "Implementation",
+                "Testing",
+                "Live",
+                "Cancelled"
+              ],
+              "defaultValue": "Discovery",
+              "allowMultiple": false
+            }
+          },
+          "priority": {
+            "type": "string",
+            "required": false,
+            "displayName": "Priority",
+            "picklistConfig": {
+              "options": [
+                "Low",
+                "Medium",
+                "High",
+                "Urgent"
+              ],
+              "defaultValue": "Medium",
+              "allowMultiple": false
+            }
+          },
+          "implementationNotes": {
+            "type": "string",
+            "required": false,
+            "displayName": "Implementation Notes"
+          },
+          "deploymentUrl": {
+            "type": "string",
+            "required": false,
+            "displayName": "Deployment URL"
+          },
+          "lastActivityAt": {
+            "type": "timestamp",
+            "required": false,
+            "displayName": "Last Activity At"
+          }
+        }
+      }
+    },
+    {
+      "symbolicId": "$feature",
+      "displayName": "Feature",
+      "config": {
+        "titleKey": "name",
+        "primaryKey": "id",
+        "properties": {
+          "name": {
+            "type": "string",
+            "required": true,
+            "displayName": "Feature Name"
+          },
+          "complexity": {
+            "type": "string",
+            "required": true,
+            "displayName": "Complexity",
+            "picklistConfig": {
+              "options": [
+                "Simple",
+                "Standard",
+                "Complex"
+              ],
+              "allowMultiple": false
+            }
+          },
+          "requestId": {
+            "type": "object-reference",
+            "required": true,
+            "displayName": "App Request",
+            "referenceConfig": {
+              "targetObjectTypeId": "$app_request"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "symbolicId": "$client_has_requests",
+      "displayName": "Client has App Requests",
+      "cardinality": "ONE_TO_MANY",
+      "sourceObjectTypeId": "$client",
+      "targetObjectTypeId": "$app_request",
+      "sourceDisplayName": "client",
+      "targetDisplayName": "appRequests",
+      "propertyName": "clientId",
+      "config": {
+        "notes": "Each app request belongs to one client"
+      }
+    },
+    {
+      "symbolicId": "$request_has_features",
+      "displayName": "App Request Features",
+      "cardinality": "ONE_TO_MANY",
+      "sourceObjectTypeId": "$app_request",
+      "targetObjectTypeId": "$feature",
+      "sourceDisplayName": "appRequest",
+      "targetDisplayName": "features",
+      "propertyName": "requestId",
+      "config": {
+        "notes": "An app request can have multiple features"
+      }
+    }
+  ],
+  "actions": [
+    {
+      "symbolicId": "$approve_design",
+      "displayName": "Approve Design",
+      "config": {
+        "rules": [
+          {
+            "type": "modify_object",
+            "properties": {
+              "status": {
+                "value": "Implementation",
+                "source": "static"
+              },
+              "implementationNotes": {
+                "source": "parameter",
+                "parameterName": "devInstructions"
+              },
+              "lastActivityAt": {
+                "source": "current_timestamp"
+              }
+            },
+            "objectParameter": "request"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "request",
+            "type": "object-reference",
+            "required": true,
+            "displayName": "App Request",
+            "objectTypeId": "$app_request"
+          },
+          {
+            "name": "devInstructions",
+            "type": "string",
+            "required": true,
+            "displayName": "Development Instructions"
+          }
+        ],
+        "description": "Transitions App Request from Design to Implementation",
+        "executionType": "declarative",
+        "submissionCriteria": [
+          {
+            "left": {
+              "path": {
+                "segments": [],
+                "baseParameterName": "request",
+                "terminalPropertyKey": "status"
+              },
+              "type": "property"
+            },
+            "type": "comparison",
+            "right": {
+              "type": "static",
+              "value": "Design"
+            },
+            "operator": "="
+          }
+        ]
+      }
+    },
+    {
+      "symbolicId": "$deploy_app",
+      "displayName": "Deploy App",
+      "config": {
+        "rules": [
+          {
+            "type": "modify_object",
+            "properties": {
+              "status": {
+                "value": "Live",
+                "source": "static"
+              },
+              "deploymentUrl": {
+                "source": "parameter",
+                "parameterName": "url"
+              },
+              "lastActivityAt": {
+                "source": "current_timestamp"
+              }
+            },
+            "objectParameter": "request"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "request",
+            "type": "object-reference",
+            "required": true,
+            "displayName": "App Request",
+            "objectTypeId": "$app_request"
+          },
+          {
+            "name": "url",
+            "type": "string",
+            "required": true,
+            "displayName": "Deployment URL"
+          }
+        ],
+        "description": "Transitions App Request from Testing to Live",
+        "executionType": "declarative",
+        "submissionCriteria": [
+          {
+            "left": {
+              "path": {
+                "segments": [],
+                "baseParameterName": "request",
+                "terminalPropertyKey": "status"
+              },
+              "type": "property"
+            },
+            "type": "comparison",
+            "right": {
+              "type": "static",
+              "value": "Testing"
+            },
+            "operator": "="
+          }
+        ]
+      }
+    },
+    {
+      "symbolicId": "$start_design",
+      "displayName": "Start Design",
+      "config": {
+        "rules": [
+          {
+            "type": "modify_object",
+            "properties": {
+              "status": {
+                "value": "Design",
+                "source": "static"
+              },
+              "lastActivityAt": {
+                "source": "current_timestamp"
+              }
+            },
+            "objectParameter": "request"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "request",
+            "type": "object-reference",
+            "required": true,
+            "displayName": "App Request",
+            "objectTypeId": "$app_request"
+          }
+        ],
+        "description": "Transitions App Request from Discovery to Design",
+        "executionType": "declarative",
+        "submissionCriteria": [
+          {
+            "left": {
+              "path": {
+                "segments": [],
+                "baseParameterName": "request",
+                "terminalPropertyKey": "status"
+              },
+              "type": "property"
+            },
+            "type": "comparison",
+            "right": {
+              "type": "static",
+              "value": "Discovery"
+            },
+            "operator": "="
+          }
+        ]
+      }
+    },
+    {
+      "symbolicId": "$submit_for_testing",
+      "displayName": "Submit for Testing",
+      "config": {
+        "rules": [
+          {
+            "type": "modify_object",
+            "properties": {
+              "status": {
+                "value": "Testing",
+                "source": "static"
+              },
+              "lastActivityAt": {
+                "source": "current_timestamp"
+              }
+            },
+            "objectParameter": "request"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "request",
+            "type": "object-reference",
+            "required": true,
+            "displayName": "App Request",
+            "objectTypeId": "$app_request"
+          }
+        ],
+        "description": "Transitions App Request from Implementation to Testing",
+        "executionType": "declarative",
+        "submissionCriteria": [
+          {
+            "left": {
+              "path": {
+                "segments": [],
+                "baseParameterName": "request",
+                "terminalPropertyKey": "status"
+              },
+              "type": "property"
+            },
+            "type": "comparison",
+            "right": {
+              "type": "static",
+              "value": "Implementation"
+            },
+            "operator": "="
+          }
+        ]
+      }
+    }
+  ],
+  "processLayouts": [
+    {
+      "symbolicId": "$process_app_generation",
+      "processName": "App Generation Pipeline",
+      "objectTypeIds": [
+        "$app_request"
+      ],
+      "trackedPicklists": [
+        "status"
+      ],
+      "layoutData": {
+        "edges": [],
+        "nodes": [],
+        "version": 1
+      }
+    }
+  ]
+}

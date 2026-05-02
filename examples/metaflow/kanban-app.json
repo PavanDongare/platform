@@ -1,0 +1,308 @@
+{
+  "version": 1,
+  "tenant": {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "name": "Default Tenant",
+    "slug": "default"
+  },
+  "app": {
+    "name": "Kanban Management",
+    "description": "A comprehensive kanban system for tracking tasks across boards"
+  },
+  "objectTypes": [
+    {
+      "symbolicId": "$board",
+      "displayName": "Board",
+      "config": {
+        "titleKey": "name",
+        "primaryKey": "id",
+        "properties": {
+          "name": {
+            "type": "string",
+            "required": true,
+            "displayName": "Board Name"
+          },
+          "description": {
+            "type": "string",
+            "required": false,
+            "displayName": "Description"
+          }
+        }
+      }
+    },
+    {
+      "symbolicId": "$task",
+      "displayName": "Task",
+      "config": {
+        "titleKey": "title",
+        "primaryKey": "id",
+        "properties": {
+          "title": {
+            "type": "string",
+            "required": true,
+            "displayName": "Title"
+          },
+          "description": {
+            "type": "string",
+            "required": false,
+            "displayName": "Description"
+          },
+          "status": {
+            "type": "string",
+            "required": true,
+            "displayName": "Status",
+            "picklistConfig": {
+              "options": [
+                "Backlog",
+                "Todo",
+                "In Progress",
+                "Review",
+                "Done"
+              ],
+              "defaultValue": "Backlog",
+              "allowMultiple": false
+            }
+          },
+          "priority": {
+            "type": "string",
+            "required": false,
+            "displayName": "Priority",
+            "picklistConfig": {
+              "options": [
+                "Low",
+                "Medium",
+                "High",
+                "Critical"
+              ],
+              "defaultValue": "Medium",
+              "allowMultiple": false
+            }
+          },
+          "boardId": {
+            "type": "object-reference",
+            "required": true,
+            "displayName": "Board",
+            "referenceConfig": {
+              "targetObjectTypeId": "$board"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "symbolicId": "$board_tasks",
+      "displayName": "Board Tasks",
+      "cardinality": "ONE_TO_MANY",
+      "sourceObjectTypeId": "$board",
+      "targetObjectTypeId": "$task",
+      "sourceDisplayName": "board",
+      "targetDisplayName": "tasks",
+      "propertyName": "boardId"
+    }
+  ],
+  "actions": [
+    {
+      "symbolicId": "$move_to_todo",
+      "displayName": "Move to Todo",
+      "config": {
+        "rules": [
+          {
+            "type": "modify_object",
+            "properties": {
+              "status": {
+                "value": "Todo",
+                "source": "static"
+              }
+            },
+            "objectParameter": "task"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task",
+            "type": "object-reference",
+            "required": true,
+            "displayName": "Task",
+            "objectTypeId": "$task"
+          }
+        ],
+        "executionType": "declarative",
+        "submissionCriteria": [
+          {
+            "left": {
+              "path": {
+                "segments": [],
+                "baseParameterName": "task",
+                "terminalPropertyKey": "status"
+              },
+              "type": "property"
+            },
+            "type": "comparison",
+            "right": {
+              "type": "static",
+              "value": "Backlog"
+            },
+            "operator": "="
+          }
+        ]
+      }
+    },
+    {
+      "symbolicId": "$start_task",
+      "displayName": "Start Task",
+      "config": {
+        "rules": [
+          {
+            "type": "modify_object",
+            "properties": {
+              "status": {
+                "value": "In Progress",
+                "source": "static"
+              }
+            },
+            "objectParameter": "task"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task",
+            "type": "object-reference",
+            "required": true,
+            "displayName": "Task",
+            "objectTypeId": "$task"
+          }
+        ],
+        "executionType": "declarative",
+        "submissionCriteria": [
+          {
+            "left": {
+              "path": {
+                "segments": [],
+                "baseParameterName": "task",
+                "terminalPropertyKey": "status"
+              },
+              "type": "property"
+            },
+            "type": "comparison",
+            "right": {
+              "type": "static",
+              "value": "Todo"
+            },
+            "operator": "="
+          }
+        ]
+      }
+    },
+    {
+      "symbolicId": "$submit_for_review",
+      "displayName": "Submit for Review",
+      "config": {
+        "rules": [
+          {
+            "type": "modify_object",
+            "properties": {
+              "status": {
+                "value": "Review",
+                "source": "static"
+              }
+            },
+            "objectParameter": "task"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task",
+            "type": "object-reference",
+            "required": true,
+            "displayName": "Task",
+            "objectTypeId": "$task"
+          }
+        ],
+        "executionType": "declarative",
+        "submissionCriteria": [
+          {
+            "left": {
+              "path": {
+                "segments": [],
+                "baseParameterName": "task",
+                "terminalPropertyKey": "status"
+              },
+              "type": "property"
+            },
+            "type": "comparison",
+            "right": {
+              "type": "static",
+              "value": "In Progress"
+            },
+            "operator": "="
+          }
+        ]
+      }
+    },
+    {
+      "symbolicId": "$complete_task",
+      "displayName": "Complete Task",
+      "config": {
+        "rules": [
+          {
+            "type": "modify_object",
+            "properties": {
+              "status": {
+                "value": "Done",
+                "source": "static"
+              }
+            },
+            "objectParameter": "task"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task",
+            "type": "object-reference",
+            "required": true,
+            "displayName": "Task",
+            "objectTypeId": "$task"
+          }
+        ],
+        "executionType": "declarative",
+        "submissionCriteria": [
+          {
+            "left": {
+              "path": {
+                "segments": [],
+                "baseParameterName": "task",
+                "terminalPropertyKey": "status"
+              },
+              "type": "property"
+            },
+            "type": "comparison",
+            "right": {
+              "type": "static",
+              "value": "Review"
+            },
+            "operator": "="
+          }
+        ]
+      }
+    }
+  ],
+  "processLayouts": [
+    {
+      "symbolicId": "$kanban_process",
+      "processName": "Kanban Board",
+      "objectTypeIds": [
+        "$task"
+      ],
+      "trackedPicklists": [
+        "status"
+      ],
+      "layoutData": {
+        "edges": [],
+        "nodes": [],
+        "version": 1
+      }
+    }
+  ]
+}

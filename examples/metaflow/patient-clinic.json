@@ -1,0 +1,390 @@
+{
+  "version": 1,
+  "tenant": {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "name": "Clinic Management",
+    "slug": "clinic"
+  },
+  "app": {
+    "name": "Patient Clinic Management",
+    "description": "System for managing patients, doctors, and appointments"
+  },
+  "objectTypes": [
+    {
+      "symbolicId": "$patient",
+      "displayName": "Patient",
+      "config": {
+        "titleKey": "fullName",
+        "primaryKey": "id",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "required": true,
+            "displayName": "Full Name"
+          },
+          "email": {
+            "type": "string",
+            "required": false,
+            "displayName": "Email"
+          },
+          "phone": {
+            "type": "string",
+            "required": false,
+            "displayName": "Phone Number"
+          },
+          "dateOfBirth": {
+            "type": "timestamp",
+            "required": false,
+            "displayName": "Date of Birth"
+          }
+        }
+      }
+    },
+    {
+      "symbolicId": "$doctor",
+      "displayName": "Doctor",
+      "config": {
+        "titleKey": "fullName",
+        "primaryKey": "id",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "required": true,
+            "displayName": "Full Name"
+          },
+          "specialization": {
+            "type": "string",
+            "required": true,
+            "displayName": "Specialization"
+          },
+          "email": {
+            "type": "string",
+            "required": false,
+            "displayName": "Email"
+          }
+        }
+      }
+    },
+    {
+      "symbolicId": "$appointment",
+      "displayName": "Appointment",
+      "config": {
+        "titleKey": "appointmentTime",
+        "primaryKey": "id",
+        "properties": {
+          "patientId": {
+            "type": "object-reference",
+            "required": true,
+            "displayName": "Patient",
+            "referenceConfig": {
+              "targetObjectTypeId": "$patient"
+            }
+          },
+          "doctorId": {
+            "type": "object-reference",
+            "required": true,
+            "displayName": "Doctor",
+            "referenceConfig": {
+              "targetObjectTypeId": "$doctor"
+            }
+          },
+          "appointmentTime": {
+            "type": "timestamp",
+            "required": true,
+            "displayName": "Appointment Time"
+          },
+          "status": {
+            "type": "string",
+            "required": true,
+            "displayName": "Status",
+            "picklistConfig": {
+              "options": [
+                "Scheduled",
+                "Checked In",
+                "In Consultation",
+                "Completed",
+                "Cancelled"
+              ],
+              "defaultValue": "Scheduled",
+              "allowMultiple": false
+            }
+          },
+          "reason": {
+            "type": "string",
+            "required": true,
+            "displayName": "Reason for Visit"
+          },
+          "notes": {
+            "type": "string",
+            "required": false,
+            "displayName": "Notes"
+          },
+          "vitals": {
+            "type": "string",
+            "required": false,
+            "displayName": "Vitals"
+          }
+        }
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "symbolicId": "$patient_appointments",
+      "displayName": "Patient Appointments",
+      "cardinality": "ONE_TO_MANY",
+      "sourceObjectTypeId": "$patient",
+      "targetObjectTypeId": "$appointment",
+      "sourceDisplayName": "patient",
+      "targetDisplayName": "appointments",
+      "propertyName": "patientId"
+    },
+    {
+      "symbolicId": "$doctor_appointments",
+      "displayName": "Doctor Appointments",
+      "cardinality": "ONE_TO_MANY",
+      "sourceObjectTypeId": "$doctor",
+      "targetObjectTypeId": "$appointment",
+      "sourceDisplayName": "doctor",
+      "targetDisplayName": "appointments",
+      "propertyName": "doctorId"
+    }
+  ],
+  "actions": [
+    {
+      "symbolicId": "$check_in_patient",
+      "displayName": "Check In Patient",
+      "config": {
+        "description": "Marks patient as checked in upon arrival",
+        "executionType": "declarative",
+        "parameters": [
+          {
+            "name": "appointment",
+            "type": "object-reference",
+            "required": true,
+            "displayName": "Appointment",
+            "objectTypeId": "$appointment"
+          },
+          {
+            "name": "vitals",
+            "type": "string",
+            "required": true,
+            "displayName": "Vitals (BP, Temp, etc.)"
+          }
+        ],
+        "rules": [
+          {
+            "type": "modify_object",
+            "objectParameter": "appointment",
+            "properties": {
+              "status": {
+                "value": "Checked In",
+                "source": "static"
+              },
+              "vitals": {
+                "source": "parameter",
+                "parameterName": "vitals"
+              }
+            }
+          }
+        ],
+        "submissionCriteria": [
+          {
+            "left": {
+              "path": {
+                "segments": [],
+                "baseParameterName": "appointment",
+                "terminalPropertyKey": "status"
+              },
+              "type": "property"
+            },
+            "type": "comparison",
+            "right": {
+              "type": "static",
+              "value": "Scheduled"
+            },
+            "operator": "="
+          }
+        ]
+      }
+    },
+    {
+      "symbolicId": "$start_consultation",
+      "displayName": "Start Consultation",
+      "config": {
+        "description": "Doctor starts the consultation",
+        "executionType": "declarative",
+        "parameters": [
+          {
+            "name": "appointment",
+            "type": "object-reference",
+            "required": true,
+            "displayName": "Appointment",
+            "objectTypeId": "$appointment"
+          }
+        ],
+        "rules": [
+          {
+            "type": "modify_object",
+            "objectParameter": "appointment",
+            "properties": {
+              "status": {
+                "value": "In Consultation",
+                "source": "static"
+              }
+            }
+          }
+        ],
+        "submissionCriteria": [
+          {
+            "left": {
+              "path": {
+                "segments": [],
+                "baseParameterName": "appointment",
+                "terminalPropertyKey": "status"
+              },
+              "type": "property"
+            },
+            "type": "comparison",
+            "right": {
+              "type": "static",
+              "value": "Checked In"
+            },
+            "operator": "="
+          }
+        ]
+      }
+    },
+    {
+      "symbolicId": "$complete_appointment",
+      "displayName": "Complete Appointment",
+      "config": {
+        "description": "Finalize the appointment with notes",
+        "executionType": "declarative",
+        "parameters": [
+          {
+            "name": "appointment",
+            "type": "object-reference",
+            "required": true,
+            "displayName": "Appointment",
+            "objectTypeId": "$appointment"
+          },
+          {
+            "name": "clinicalNotes",
+            "type": "string",
+            "required": true,
+            "displayName": "Clinical Notes"
+          }
+        ],
+        "rules": [
+          {
+            "type": "modify_object",
+            "objectParameter": "appointment",
+            "properties": {
+              "status": {
+                "value": "Completed",
+                "source": "static"
+              },
+              "notes": {
+                "source": "parameter",
+                "parameterName": "clinicalNotes"
+              }
+            }
+          }
+        ],
+        "submissionCriteria": [
+          {
+            "left": {
+              "path": {
+                "segments": [],
+                "baseParameterName": "appointment",
+                "terminalPropertyKey": "status"
+              },
+              "type": "property"
+            },
+            "type": "comparison",
+            "right": {
+              "type": "static",
+              "value": "In Consultation"
+            },
+            "operator": "="
+          }
+        ]
+      }
+    },
+    {
+      "symbolicId": "$cancel_appointment",
+      "displayName": "Cancel Appointment",
+      "config": {
+        "description": "Cancel the appointment",
+        "executionType": "declarative",
+        "parameters": [
+          {
+            "name": "appointment",
+            "type": "object-reference",
+            "required": true,
+            "displayName": "Appointment",
+            "objectTypeId": "$appointment"
+          },
+          {
+            "name": "reason",
+            "type": "string",
+            "required": true,
+            "displayName": "Cancellation Reason"
+          }
+        ],
+        "rules": [
+          {
+            "type": "modify_object",
+            "objectParameter": "appointment",
+            "properties": {
+              "status": {
+                "value": "Cancelled",
+                "source": "static"
+              },
+              "notes": {
+                "source": "parameter",
+                "parameterName": "reason"
+              }
+            }
+          }
+        ],
+        "submissionCriteria": [
+          {
+            "left": {
+              "path": {
+                "segments": [],
+                "baseParameterName": "appointment",
+                "terminalPropertyKey": "status"
+              },
+              "type": "property"
+            },
+            "type": "comparison",
+            "right": {
+              "type": "static",
+              "value": "Scheduled"
+            },
+            "operator": "="
+          }
+        ]
+      }
+    }
+  ],
+  "processLayouts": [
+    {
+      "symbolicId": "$patient_appointment_flow",
+      "processName": "Patient Appointment Flow",
+      "objectTypeIds": [
+        "$appointment"
+      ],
+      "trackedPicklists": [
+        "status"
+      ],
+      "layoutData": {
+        "edges": [],
+        "nodes": [],
+        "version": 1
+      }
+    }
+  ]
+}
