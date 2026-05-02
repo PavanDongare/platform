@@ -3,47 +3,60 @@ export function ExperienceSection() {
     {
       company: 'Leucine',
       subtitle: 'AI for Pharma',
-      role: 'Technical Product Manager',
-      period: 'Sep 2025 - Present',
-      product: 'Rich Data Platform & Ontology Engine for pharmaceutical manufacturing software',
+      role: 'Tech Lead – Metadata Platform',
+      period: 'Sep 2025 – Jan 2026',
       achievements: [
-        'Built Palantir-styled Ontology Engine that auto-generates APIs, schema, and UI from metadata',
-        'Designed multi-tenant defaults & override system for client-specific configurations without code',
-        'Reduced app build time from weeks to hours',
+        'Led end-to-end development of metadata-driven platform for pharma compliance',
+        'Designed EAV/JSONB architecture enabling configuration-driven application generation',
+        'Built core backend services (Supabase) and dynamic schema, API, and UI generation',
+        'Implemented multi-tenant compliance rule engine reducing onboarding time from weeks to hours',
+        'Led a team of 5 engineers, owning core system architecture and technical direction',
       ],
     },
     {
       company: 'Unilever',
-      subtitle: 'Contract',
-      role: 'Product Lead - OneTrust Consent Management',
-      period: 'Feb 2024 - Sep 2025',
-      product: 'OneTrust Compliance platform for 1000+ consumer websites',
+      subtitle: 'via Neem Consulting & Publicis Sapient',
+      role: 'Tech Lead – Compliance Automation (OneTrust)',
+      period: 'Feb 2024 – Sep 2025',
       achievements: [
-        'Built and deployed agentic AI compliance bot for automated daily checks and fixes; scaled to 1000+ sites',
-        'Implemented OneTrust supporting 30M MAU & 7M DAU; led migration for 30+ business units',
-        '10X compliance (10% → 96% across 1000+ sites), +20% NPS',
+        'Built automation scripts and monitoring systems for large-scale compliance workflows',
+        'Designed real-time scanning and rule enforcement pipelines across 1000+ websites',
+        'Reduced manual workload for a 10-member operations team through automation',
+        'Scaled compliance coverage from 10% to 96% across global web properties',
+        'Implemented backend services and integrations using Next.js and Express',
       ],
     },
     {
       company: 'Vahak',
-      role: 'Technical Product Manager',
-      period: 'Mar 2022 - Feb 2023',
-      product: 'B2B transport marketplace platform',
+      subtitle: 'Epictus Solutions Pvt Ltd',
+      role: 'Technical Product Manager, Platform',
+      period: 'Mar 2022 – Feb 2023',
       achievements: [
-        'Led A/B experimentation for onboarding; launched marketplace features & user-to-user calls',
-        'Executed security audit, auth revamp; led React to Next.js migration',
-        '10X DAU, 10X SEO coverage, 4X conversion rate, 2X organic traffic',
+        'Led frontend migration from React to Next.js for B2B transport marketplace',
+        'Implemented authentication, API integration, and performance optimizations',
+        'Migrated infrastructure from AWS to Vercel improving deployment speed and reliability',
+        'Impact: DAU increased 10x, conversion rate 4x, organic traffic 2x',
+      ],
+    },
+    {
+      company: 'Independent Consulting',
+      role: 'Full-Stack Architect & Consultant',
+      period: 'Mar 2021 – Present',
+      achievements: [
+        'DreamCare (Maharashtra Police): Built and maintain workflow applications and websites supporting police operations',
+        'EdTech & IoT: Architected and shipped full-stack web applications, owning frontend, backend, and integration layers',
+        'Masai School: Industry mentor for full-stack development, guiding students through real-world project work',
       ],
     },
     {
       company: 'Morgan Stanley',
-      role: 'Senior Associate - Technology',
-      period: 'Aug 2018 - Mar 2021',
-      product: 'Financial Wellness Game & Common UI Library',
+      role: 'Senior Software Engineer',
+      period: 'Aug 2018 – Mar 2021',
       achievements: [
-        'Led 0→1 development for Financial Wellness Game; UX research for Uber & Pinterest IPOs',
-        'Built Common UI library used by 12 teams (250+ developers)',
-        '$1M ARR product, +20% IPO conversions, +12% retention via AARRR optimization',
+        'Migrated AngularJS codebases to TypeScript and modern frontend architecture',
+        'Built shared UI component library adopted by 250+ developers',
+        'Developed enterprise regulatory reporting applications',
+        'Built the frontend wizard journey for the pre-IPO stock distribution platform supporting Uber and Pinterest IPOs',
       ],
     },
   ]
@@ -54,9 +67,9 @@ export function ExperienceSection() {
         <p className="text-zinc-400 text-xs uppercase tracking-widest mb-12">Experience</p>
 
         <div className="space-y-8">
-          {experiences.map((experience) => (
+          {experiences.map((experience, idx) => (
             <div
-              key={experience.company}
+              key={`${experience.company}-${idx}`}
               className="border border-zinc-100 rounded-lg p-6 hover:border-zinc-200 transition-colors"
             >
               {/* Company Header */}
@@ -75,13 +88,8 @@ export function ExperienceSection() {
                 </span>
               </div>
 
-              {/* Product */}
-              <p className="text-xs text-zinc-500 mb-4 italic">
-                Product: {experience.product}
-              </p>
-
               {/* Achievements */}
-              <ul className="space-y-2">
+              <ul className="space-y-2 mt-4">
                 {experience.achievements.map((achievement, idx) => (
                   <li key={idx} className="flex gap-3 text-sm text-zinc-600">
                     <span className="text-zinc-400 mt-0.5 flex-shrink-0">•</span>

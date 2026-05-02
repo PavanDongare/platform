@@ -26,7 +26,7 @@ export default function PortfolioPage() {
             <h1 className="text-4xl md:text-5xl font-medium tracking-tight leading-[1.1] mb-4">
               I spec it, build it, ship it.
             </h1>
-            <p className="text-sm text-zinc-500">7.5 years • M.Tech NIT Trichy • IEEE Publications</p>
+            <p className="text-sm text-zinc-500">7+ years • Full-Stack Engineer • M.Tech NIT Trichy</p>
           </div>
 
           {/* Profile Photo */}
@@ -64,7 +64,7 @@ export default function PortfolioPage() {
         <div className="max-w-4xl flex flex-col md:flex-row md:items-center md:justify-between gap-8">
           <div>
             <p className="text-zinc-900 font-medium mb-1">Pavan Dongare</p>
-            <p className="text-zinc-400 text-sm">Technical Product Manager</p>
+            <p className="text-zinc-400 text-sm">Full-Stack Engineer</p>
           </div>
           <div className="flex gap-6 text-sm">
             <a
