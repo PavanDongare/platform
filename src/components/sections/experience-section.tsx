@@ -39,7 +39,7 @@ export function ExperienceSection() {
       ],
     },
     {
-      company: 'Independent Consulting',
+      company: 'Side Projects',
       role: 'Full-Stack Architect & Consultant',
       period: 'Mar 2021 – Present',
       achievements: [
