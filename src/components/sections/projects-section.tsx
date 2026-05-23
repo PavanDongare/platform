@@ -24,51 +24,6 @@ import {
 
 const projects = [
   {
-    id: 'cited',
-    title: 'Cited (GEO)',
-    subtitle: 'Generative Optimization',
-    icon: Globe,
-    description: 'Generative Engine Optimization (GEO) platform that analyzes and auto-optimizes website content to be cited by AI chatbots.',
-    href: 'https://cited.pavandongare.com',
-    isExternal: true,
-    features: [
-      'LLM citation readiness scoring',
-      'Claude AI integration & optimization advice',
-      'Next.js 16 + React 19 + TypeScript stack'
-    ],
-    githubUrl: 'https://github.com/PavanDongare/ai-ready-app',
-  },
-  {
-    id: 'ai-pr-security-reviewer',
-    title: 'AI PR Security Reviewer',
-    subtitle: 'Automated Code Auditor',
-    icon: ShieldCheck,
-    description: 'Asynchronous local-first code auditor that checks GitHub pull requests for security vulnerabilities using LLMs.',
-    href: 'https://github.com/PavanDongare/ai-pr-security-reviewer',
-    isExternal: true,
-    features: [
-      'Next.js API & Node background worker process',
-      'Configurable SQLite job queue',
-      'AI reviews powered by OpenRouter integration'
-    ],
-    githubUrl: 'https://github.com/PavanDongare/ai-pr-security-reviewer',
-  },
-  {
-    id: 'gtm-pipeline',
-    title: 'Allica GTM Pipeline',
-    subtitle: 'AI Lead Qualification',
-    icon: GitFork,
-    description: 'Lead qualification and enrichment pipeline with deterministic eligibility scoring and automated LLM-powered custom outreach.',
-    href: 'https://gtm.pavandongare.com',
-    isExternal: true,
-    features: [
-      'Dockerized Next.js + Node.js + Supabase stack',
-      'Deterministic risk gating & routing logic',
-      'Custom LLM evaluation and validation suite'
-    ],
-    githubUrl: 'https://github.com/PavanDongare/gtm-engr-assignment',
-  },
-  {
     id: 'metaflow',
     title: 'Metaflow',
     subtitle: 'Workflow Engine',
@@ -84,19 +39,19 @@ const projects = [
     githubUrl: 'https://github.com/PavanDongare/metaflow-app',
   },
   {
-    id: 'composio-cli',
-    title: 'Composio CLI Assistant',
-    subtitle: 'Interactive AI Planner',
-    icon: Bot,
-    description: 'CLI companion powered by OpenAI Agents SDK and Composio for secure Gmail and Google Calendar updates.',
-    href: 'https://github.com/PavanDongare/composio',
+    id: 'cited',
+    title: 'Cited (GEO)',
+    subtitle: 'Generative Optimization',
+    icon: Globe,
+    description: 'Generative Engine Optimization (GEO) platform that analyzes and auto-optimizes website content to be cited by AI chatbots.',
+    href: 'https://cited.pavandongare.com',
     isExternal: true,
     features: [
-      'Composio session tool discovery',
-      'Interactive confirmation-gated execution',
-      'Redacted JSONL audit logs'
+      'LLM citation readiness scoring',
+      'Claude AI integration & optimization advice',
+      'Next.js 16 + React 19 + TypeScript stack'
     ],
-    githubUrl: 'https://github.com/PavanDongare/composio',
+    githubUrl: 'https://github.com/PavanDongare/ai-ready-app',
   },
   {
     id: 'dms',
@@ -129,6 +84,36 @@ const projects = [
     githubUrl: 'https://github.com/PavanDongare/web-ssh-gateway',
   },
   {
+    id: 'ai-pr-security-reviewer',
+    title: 'AI PR Security Reviewer',
+    subtitle: 'Automated Code Auditor',
+    icon: ShieldCheck,
+    description: 'Asynchronous local-first code auditor that checks GitHub pull requests for security vulnerabilities using LLMs.',
+    href: 'https://github.com/PavanDongare/ai-pr-security-reviewer',
+    isExternal: true,
+    features: [
+      'Next.js API & Node background worker process',
+      'Configurable SQLite job queue',
+      'AI reviews powered by OpenRouter integration'
+    ],
+    githubUrl: 'https://github.com/PavanDongare/ai-pr-security-reviewer',
+  },
+  {
+    id: 'gtm-pipeline',
+    title: 'GTM AI Pipeline',
+    subtitle: 'AI Lead Qualification',
+    icon: GitFork,
+    description: 'Lead qualification and enrichment pipeline with deterministic eligibility scoring and automated LLM-powered custom outreach.',
+    href: 'https://gtm.pavandongare.com',
+    isExternal: true,
+    features: [
+      'Dockerized Next.js + Node.js + Supabase stack',
+      'Deterministic risk gating & routing logic',
+      'Custom LLM evaluation and validation suite'
+    ],
+    githubUrl: 'https://github.com/PavanDongare/gtm-engr-assignment',
+  },
+  {
     id: 'spatial-notes',
     title: 'Spatial Notes',
     subtitle: 'Canvas-Based Notes',
@@ -142,6 +127,21 @@ const projects = [
       'Multi-section notebook system'
     ],
     githubUrl: 'https://github.com/PavanDongare/onenote-app',
+  },
+  {
+    id: 'composio-cli',
+    title: 'Composio CLI Assistant',
+    subtitle: 'Interactive AI Planner',
+    icon: Bot,
+    description: 'CLI companion powered by OpenAI Agents SDK and Composio for secure Gmail and Google Calendar updates.',
+    href: 'https://github.com/PavanDongare/composio',
+    isExternal: true,
+    features: [
+      'Composio session tool discovery',
+      'Interactive confirmation-gated execution',
+      'Redacted JSONL audit logs'
+    ],
+    githubUrl: 'https://github.com/PavanDongare/composio',
   },
   {
     id: 'rocket-app',
