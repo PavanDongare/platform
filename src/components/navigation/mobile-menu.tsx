@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Linkedin, Mail, Calendar } from 'lucide-react'
+import { Mail, Calendar } from 'lucide-react'
 
 declare global {
   interface Window {
@@ -25,11 +25,6 @@ const navLinks = [
 ]
 
 const contactLinks = [
-  {
-    label: 'LinkedIn',
-    href: 'https://www.linkedin.com/in/pavan-dongare/',
-    icon: Linkedin,
-  },
   {
     label: 'Email',
     href: 'mailto:dongare.pavan25@gmail.com',

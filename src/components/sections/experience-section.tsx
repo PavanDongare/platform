@@ -2,8 +2,8 @@ export function ExperienceSection() {
   const experiences = [
     {
       company: 'Leucine',
-      subtitle: 'AI for Pharma • Full-time',
-      role: 'Developer',
+      subtitle: 'AI for Pharma',
+      role: 'Software Engineer, Metadata Platform',
       period: 'Sep 2025 – Jan 2026',
       achievements: [
         'Led end-to-end development of metadata-driven platform for pharma compliance',
@@ -15,8 +15,8 @@ export function ExperienceSection() {
     },
     {
       company: 'Unilever',
-      subtitle: 'Full-time • via Neem Consulting & Publicis Sapient',
-      role: 'Lead',
+      subtitle: 'via Neem Consulting and Publicis Sapient',
+      role: 'Software Engineer, Compliance Systems',
       period: 'Feb 2024 – Sep 2025',
       achievements: [
         'Built automation scripts and monitoring systems for large-scale compliance workflows',
@@ -28,8 +28,8 @@ export function ExperienceSection() {
     },
     {
       company: 'Vahak',
-      subtitle: 'Full-time • Epictus Solutions Pvt Ltd',
-      role: 'TPM',
+      subtitle: 'Epictus Solutions Pvt Ltd',
+      role: 'Technical Product Manager, Platform',
       period: 'Mar 2022 – Feb 2023',
       achievements: [
         'Led frontend migration from React to Next.js for B2B transport marketplace',
@@ -43,37 +43,20 @@ export function ExperienceSection() {
       role: 'Full-Stack Architect & Consultant',
       period: 'Mar 2021 – Present',
       achievements: [
-        'DreamCare (Maharashtra Police): Built and maintain workflow applications and websites supporting police operations',
-        'EdTech & IoT: Architected and shipped full-stack web applications, owning frontend, backend, and integration layers',
+        'DreamCare (Maharashtra Police): Built and maintain workflow applications and websites supporting police department operations',
+        'EdTech & IoT: Architected and shipped full-stack web applications for product teams in EdTech and IoT, owning frontend, backend, and integration layers',
         'Masai School: Industry mentor for full-stack development, guiding students through real-world project work',
       ],
     },
     {
       company: 'Morgan Stanley',
-      role: 'Software Engineer',
+      role: 'Senior Software Engineer',
       period: 'Aug 2018 – Mar 2021',
       achievements: [
         'Migrated AngularJS codebases to TypeScript and modern frontend architecture',
         'Built shared UI component library adopted by 250+ developers',
         'Developed enterprise regulatory reporting applications',
-        'Built the frontend wizard journey for the pre-IPO stock distribution platform supporting Uber and Pinterest IPOs',
-      ],
-    },
-    {
-      company: 'National Institute of Technology, Tiruchirappalli',
-      role: 'Teaching Assistant , Operating Systems course.',
-      period: 'Aug 2016 – Jul 2018',
-      achievements: [
-        'TA on courses - Introduction to programming, operating systems',
-      ],
-    },
-    {
-      company: 'Deutsche Bank',
-      subtitle: 'Full-time',
-      role: 'Software Engineer',
-      period: 'Jun 2015 – Dec 2015',
-      achievements: [
-        'Software engineering and full-stack development using JavaScript and Python',
+        'Built the frontend wizard journey for the pre-IPO stock distribution platform used by employees claiming IPO shares, including flows that supported Uber and Pinterest IPOs',
       ],
     },
   ]

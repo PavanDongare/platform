@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { ChevronDown, Linkedin, Mail, Calendar } from 'lucide-react'
+import { ChevronDown, Mail, Calendar } from 'lucide-react'
 
 declare global {
   interface Window {
@@ -12,11 +12,6 @@ declare global {
 }
 
 const contactLinks = [
-  {
-    label: 'LinkedIn',
-    href: 'https://www.linkedin.com/in/pavan-dongare/',
-    icon: Linkedin,
-  },
   {
     label: 'Email',
     href: 'mailto:dongare.pavan25@gmail.com',

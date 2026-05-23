@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { Github, Linkedin } from 'lucide-react'
+import { Github } from 'lucide-react'
 import { Header } from '@/components/navigation/header'
 import { AboutSection } from '@/components/sections/about-section'
 import { MetricsShowcase } from '@/components/sections/metrics-showcase'
@@ -67,15 +67,6 @@ export default function PortfolioPage() {
             <p className="text-zinc-400 text-sm">Full-Stack Engineer</p>
           </div>
           <div className="flex gap-6 text-sm">
-            <a
-              href="https://www.linkedin.com/in/pavan-dongare/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-zinc-400 hover:text-zinc-900 transition-colors"
-            >
-              <Linkedin className="w-4 h-4" />
-              <span>LinkedIn</span>
-            </a>
             <a
               href="https://github.com/pavandongare"
               target="_blank"
