@@ -2,8 +2,8 @@ export function ExperienceSection() {
   const experiences = [
     {
       company: 'Leucine',
-      subtitle: 'AI for Pharma',
-      role: 'Tech Lead – Metadata Platform',
+      subtitle: 'AI for Pharma • Full-time',
+      role: 'Developer',
       period: 'Sep 2025 – Jan 2026',
       achievements: [
         'Led end-to-end development of metadata-driven platform for pharma compliance',
@@ -15,8 +15,8 @@ export function ExperienceSection() {
     },
     {
       company: 'Unilever',
-      subtitle: 'via Neem Consulting & Publicis Sapient',
-      role: 'Tech Lead – Compliance Automation (OneTrust)',
+      subtitle: 'Full-time • via Neem Consulting & Publicis Sapient',
+      role: 'Lead',
       period: 'Feb 2024 – Sep 2025',
       achievements: [
         'Built automation scripts and monitoring systems for large-scale compliance workflows',
@@ -28,8 +28,8 @@ export function ExperienceSection() {
     },
     {
       company: 'Vahak',
-      subtitle: 'Epictus Solutions Pvt Ltd',
-      role: 'Technical Product Manager, Platform',
+      subtitle: 'Full-time • Epictus Solutions Pvt Ltd',
+      role: 'TPM',
       period: 'Mar 2022 – Feb 2023',
       achievements: [
         'Led frontend migration from React to Next.js for B2B transport marketplace',
@@ -50,13 +50,30 @@ export function ExperienceSection() {
     },
     {
       company: 'Morgan Stanley',
-      role: 'Senior Software Engineer',
+      role: 'Software Engineer',
       period: 'Aug 2018 – Mar 2021',
       achievements: [
         'Migrated AngularJS codebases to TypeScript and modern frontend architecture',
         'Built shared UI component library adopted by 250+ developers',
         'Developed enterprise regulatory reporting applications',
         'Built the frontend wizard journey for the pre-IPO stock distribution platform supporting Uber and Pinterest IPOs',
+      ],
+    },
+    {
+      company: 'National Institute of Technology, Tiruchirappalli',
+      role: 'Teaching Assistant , Operating Systems course.',
+      period: 'Aug 2016 – Jul 2018',
+      achievements: [
+        'TA on courses - Introduction to programming, operating systems',
+      ],
+    },
+    {
+      company: 'Deutsche Bank',
+      subtitle: 'Full-time',
+      role: 'Software Engineer',
+      period: 'Jun 2015 – Dec 2015',
+      achievements: [
+        'Software engineering and full-stack development using JavaScript and Python',
       ],
     },
   ]
