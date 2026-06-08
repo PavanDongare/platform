@@ -258,10 +258,9 @@ export function ProjectsSection() {
         <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] xl:grid-cols-3 gap-6">
           {projects.map((project) => {
             const IconComponent = project.icon
-            const isExternalLink = project.isExternal || project.href.startsWith('http')
 
-            const CardContent = (
-              <div className="relative group h-full">
+            return (
+              <div key={project.id} className="relative group h-full">
                 <div className="border border-zinc-100 rounded-lg hover:border-zinc-200 hover:shadow-md transition-all p-6 bg-white h-full flex flex-col">
                   {/* Content */}
                   <div className="flex flex-col flex-1">
@@ -295,52 +294,24 @@ export function ProjectsSection() {
                       ))}
                     </ul>
 
-                    {/* CTA + GitHub (pushed to bottom) */}
-                    <div className="flex items-center justify-between pt-4 border-t border-zinc-100 mt-auto">
-                      {isExternalLink && !project.href.includes('github.com') ? (
-                        <span className="text-sm text-zinc-400 group-hover:text-zinc-900 transition-colors">
-                          {project.isExternal ? 'View live app →' : 'View live demo →'}
-                        </span>
-                      ) : (
-                        <div />
-                      )}
-
-                      {project.githubUrl && (
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            window.open(project.githubUrl, '_blank', 'noopener,noreferrer')
-                          }}
-                          className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-900 transition-colors cursor-pointer bg-none border-none p-0"
+                    {/* GitHub (pushed to bottom) */}
+                    <div className="flex items-center justify-end pt-4 border-t border-zinc-100 mt-auto">
+                      {project.githubUrl ? (
+                        <a
+                          href={project.githubUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-900 transition-colors"
                         >
                           <Github className="w-4 h-4" />
                           <span>Source</span>
-                        </button>
+                        </a>
+                      ) : (
+                        <div />
                       )}
                     </div>
                   </div>
                 </div>
-              </div>
-            )
-
-            const hasHref = !!project.href && project.href !== '#'
-
-            return (
-              <div key={project.id}>
-                {hasHref ? (
-                  isExternalLink ? (
-                    <a href={project.href} target="_blank" rel="noopener noreferrer">
-                      {CardContent}
-                    </a>
-                  ) : (
-                    <Link href={project.href}>
-                      {CardContent}
-                    </Link>
-                  )
-                ) : (
-                  CardContent
-                )}
               </div>
             )
           })}

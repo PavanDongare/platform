@@ -8,14 +8,13 @@ import { ContactDropdown } from './contact-dropdown'
 
 const navLinks = [
   { label: 'About', tab: 'about' as const },
-  { label: 'Experience', tab: 'experience' as const },
   { label: 'Projects', tab: 'projects' as const },
   { label: 'Recommendations', tab: 'testimonials' as const },
 ]
 
 interface HeaderProps {
-  activeTab: 'about' | 'experience' | 'projects' | 'testimonials'
-  setActiveTab: (tab: 'about' | 'experience' | 'projects' | 'testimonials') => void
+  activeTab: 'about' | 'projects' | 'testimonials'
+  setActiveTab: (tab: 'about' | 'projects' | 'testimonials') => void
 }
 
 export function Header({ activeTab, setActiveTab }: HeaderProps) {
@@ -74,20 +73,8 @@ export function Header({ activeTab, setActiveTab }: HeaderProps) {
             ))}
           </nav>
 
-          {/* Right: Resume + Contact Dropdown + Mobile Menu */}
+          {/* Right: Contact Dropdown + Mobile Menu */}
           <div className="flex items-center gap-4 md:gap-6">
-            <a
-              href="/pavandongare.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden md:inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-900 border border-zinc-200 rounded-lg hover:border-zinc-300 hover:bg-zinc-50 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Resume
-            </a>
-
             <ContactDropdown />
 
             {/* Mobile Menu Button */}

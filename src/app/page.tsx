@@ -6,12 +6,11 @@ import { Github } from 'lucide-react'
 import { Header } from '@/components/navigation/header'
 import { AboutSection } from '@/components/sections/about-section'
 import { MetricsShowcase } from '@/components/sections/metrics-showcase'
-import { ExperienceSection } from '@/components/sections/experience-section'
 import { ProjectsSection } from '@/components/sections/projects-section'
 import { TestimonialsSection } from '@/components/sections/testimonials-section'
 
 export default function PortfolioPage() {
-  const [activeTab, setActiveTab] = useState<'about' | 'experience' | 'projects' | 'testimonials'>('about')
+  const [activeTab, setActiveTab] = useState<'about' | 'projects' | 'testimonials'>('about')
 
   return (
     <div className="bg-white text-zinc-900 min-h-screen">
@@ -52,8 +51,6 @@ export default function PortfolioPage() {
       {activeTab === 'about' && <MetricsShowcase />}
 
       {activeTab === 'about' && <AboutSection />}
-
-      {activeTab === 'experience' && <ExperienceSection />}
 
       {activeTab === 'projects' && <ProjectsSection />}
 
