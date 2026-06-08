@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { Github } from 'lucide-react'
 import { Header } from '@/components/navigation/header'
 import { AboutSection } from '@/components/sections/about-section'
-import { MetricsShowcase } from '@/components/sections/metrics-showcase'
+import { SkillsShowcase } from '@/components/sections/skills-showcase'
 import { ProjectsSection } from '@/components/sections/projects-section'
 import { TestimonialsSection } from '@/components/sections/testimonials-section'
 
@@ -23,9 +23,9 @@ export default function PortfolioPage() {
           <div className="flex-1 max-w-2xl">
             <p className="text-zinc-400 text-sm tracking-wide mb-4">Pavan Dongare</p>
             <h1 className="text-4xl md:text-5xl font-medium tracking-tight leading-[1.1] mb-4">
-              I spec it, build it, ship it.
+              Architecting clean code and scalable web systems.
             </h1>
-            <p className="text-sm text-zinc-500">7+ years • Full-Stack Engineer • M.Tech NIT Trichy</p>
+            <p className="text-sm text-zinc-500">Full-Stack Engineer & Tech Lead • M.Tech NIT Trichy</p>
           </div>
 
           {/* Profile Photo */}
@@ -48,7 +48,7 @@ export default function PortfolioPage() {
       </section>
       )}
 
-      {activeTab === 'about' && <MetricsShowcase />}
+      {activeTab === 'about' && <SkillsShowcase />}
 
       {activeTab === 'about' && <AboutSection />}
 
